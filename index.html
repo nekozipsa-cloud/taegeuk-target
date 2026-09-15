@@ -40,16 +40,9 @@
   @media (prefers-reduced-motion: reduce) { .cta.go { animation: none; } }
   .err { position: absolute; left: 6.5vw; top: 72vh; width: 52vw; font-size: clamp(13px, 1.3vw, 16px); font-weight: 700; color: #e0506e; }
   .foot { position: absolute; left: 6.5vw; bottom: 6vh; font-size: clamp(11px, 1.1vw, 15px); font-weight: 700; color: var(--ink3); }
-  /* 오른쪽: 코스 카드 2×2 (시안) */
-  .eyebrow, .title, .sub, .cta, .err, .foot { z-index: 1; }
-  .courses { z-index: 1; position: absolute; right: 6vw; top: 50%; transform: translateY(-50%); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4vw; width: 30vw; max-width: 400px; }
-  .course { font: inherit; color: inherit; text-align: left; cursor: pointer; border-radius: 26px; background: rgba(255,255,255,0.72); box-shadow: 0 12px 40px rgba(60,80,120,0.16); border: 2px solid transparent; padding: 1.6vw 1.5vw; display: flex; flex-direction: column; gap: 8px; transition: transform .15s, box-shadow .15s; }
-  .course .sw { width: 44px; height: 44px; border-radius: 14px; }
-  .course h3 { margin: 0; font-family: "Noto Sans KR", sans-serif; font-weight: 900; font-size: clamp(18px, 1.9vw, 24px); }
-  .course p { margin: 0; font-size: clamp(12px, 1.05vw, 14px); font-weight: 700; color: #7a82a6; }
-  .course:focus-visible { outline: 3px solid var(--pink); }
-  .coursehint { z-index: 1; position: absolute; right: 6vw; top: calc(50% + 24vh); width: 30vw; max-width: 400px; text-align: center; font-size: clamp(11px, 1.05vw, 14px); font-weight: 700; color: var(--ink3); }
-  .course.sel { border-color: var(--pink); transform: translateY(-6px) scale(1.03); box-shadow: 0 22px 50px rgba(255,122,162,0.28); }
+  /* 오른쪽 아래: 나오는 동작 네 가지 (선택 아님, 안내) */
+  .moves { z-index: 1; position: absolute; left: 6.5vw; bottom: 13vh; display: flex; gap: 10px; flex-wrap: wrap; }
+  .moves span { padding: 8px 16px; border-radius: 999px; font-family: "Noto Sans KR", sans-serif; font-weight: 800; font-size: clamp(12px, 1.2vw, 16px); color: var(--ink2); box-shadow: 0 8px 20px rgba(60,80,120,0.12); }
 </style>
 </head>
 <body>
@@ -59,12 +52,10 @@
 </div>
 <div id="panel">
   <button id="bCam">카메라 켜기</button>
-  <button id="bPrev">◀ 코스</button>
   <button id="bPlay">▶ 시작</button>
-  <button id="bNext">코스 ▶</button>
   <button id="bVoice">구령 켜짐</button>
 </div>
-<div id="hint">리모컨: ▶ 시작 · ◀▶ 코스<br>키보드: Space 시작 · ←→ 코스 · V 구령</div>
+<div id="hint">리모컨 ▶ 또는 Space: 시작 · V: 구령</div>
 <div id="toast"></div>
 
 <div id="start" class="screen">
@@ -75,8 +66,7 @@
   <button id="ctaCam" class="cta"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h2l1.5-2h5L16 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg><span>카메라 켜기</span></button>
   <button id="ctaGo" class="cta go" hidden><span>▶&nbsp; 시작</span></button>
   <div id="startErr" class="err"></div>
-  <div class="courses" id="courseCards"></div>
-  <div class="coursehint">카드를 눌러 코스 선택 · 리모컨 ◀ ▶ · 차기는 "차기"와 "태극 1장" 코스에 나옵니다</div>
+  <div class="moves"><span style="background:#d9fff0">아래막기</span><span style="background:#fff0c2">몸통지르기</span><span style="background:#ffe1ea">얼굴막기</span><span style="background:#d8e6ff">앞차기</span></div>
   <div class="foot">카메라 한 대 · 빔프로젝터 · 리모컨 버튼 하나</div>
 </div>
 
@@ -115,26 +105,11 @@ const KIND = {
 const INK = '#22263a', INK2 = '#5b627f', INK3 = '#9aa1bf', PINK = '#ff7aa2', ORANGE = '#ff9a62';
 const FONT_NUM = '"Nunito", "Noto Sans KR", sans-serif';
 const FONT_KO = '"Noto Sans KR", "Nunito", sans-serif';
-const COURSE_SW = ['#d9fff0', '#fff0c2', '#d8e6ff', 'linear-gradient(135deg,#ffd6e8,#d8e6ff)'];
 
-/* ── 코스 4개 ───────────────────────────────────────────── */
+/* ── 한 가지 방식: 태극 1장의 네 동작을 섞어서 60초 ───────── */
 const COURSES = [
-  { id: 'block', name: '막기',     sub: '아래 · 몸통 · 얼굴',   seconds: 60,
-    next: (prev) => pick(['low', 'mid', 'high'].filter(k => k !== prev)) },
-  { id: 'punch', name: '치기',     sub: '몸통 지르기',           seconds: 60,
-    next: () => 'mid' },
-  { id: 'kick',  name: '차기',     sub: '앞차기',                seconds: 60,
-    next: () => 'kick' },
-  { id: 'tg1',   name: '태극 1장', sub: '타깃만 따라가면 한 번', seconds: 0,
-    seq: [
-      ['←', 'low'], ['←', 'mid'], ['→', 'low'], ['→', 'mid'],
-      ['↑', 'low'], ['↑', 'mid'],
-      ['→', 'mid'], ['→', 'mid'], ['←', 'mid'], ['←', 'mid'],
-      ['↑', 'low'], ['↑', 'mid'],
-      ['←', 'high'], ['←', 'kick'], ['←', 'mid'],
-      ['→', 'high'], ['→', 'kick'], ['→', 'mid'],
-      ['↓', 'low'], ['↓', 'mid'],
-    ] },
+  { id: 'tg1', name: '태극 1장', sub: '아래막기 · 몸통지르기 · 얼굴막기 · 앞차기', seconds: 60,
+    next: (prev) => pick(['low', 'mid', 'high', 'kick'].filter(k => k !== prev)) },
 ];
 const DIR_TEXT = { '←': '왼쪽으로', '→': '오른쪽으로', '↑': '앞으로', '↓': '뒤로 돌아' };
 function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
@@ -184,7 +159,7 @@ const G = {
 };
 const LANE_COLORS = ['#ff7aa2', '#6fb1ff', '#2fd38a', '#ffb347'];
 window.__G = G;   // 점검용
-window.__api = { pressPlay: () => pressPlay(), changeCourse: (d) => changeCourse(d) };
+window.__api = { pressPlay: () => pressPlay() };
 
 /* ── 몸 기준점 (카메라 랜드마크에서 계산) ────────────────
    { cx, sw, headY, chestY, hipY, kneeY, wrists:[{x,y}], ankles:[{x,y}] } */
@@ -286,12 +261,7 @@ function endRound() {
   say(best >= 3 ? '아주 잘했습니다' : '잘했어요');
 }
 function stars(p) { if (!p.shown) return 0; const r = p.hits / p.shown; return r >= 0.8 ? 3 : r >= 0.5 ? 2 : 1; }
-function changeCourse(d) {
-  if (G.state === 'play') return;
-  G.course = (G.course + d + COURSES.length) % COURSES.length;
-  G.state = 'attract';
-  say(COURSES[G.course].name);
-}
+function changeCourse() { /* 코스는 하나뿐 */ }
 function pressPlay() {
   if (G.state === 'play') { G.state = 'attract'; G.cur = null; for (const p of G.players) p.target = null; say('정지'); return; }
   startRound();
@@ -301,26 +271,16 @@ function pressPlay() {
 window.addEventListener('keydown', (e) => {
   const k = e.key;
   if (k === ' ' || k === 'Enter' || k === 'PageDown') { e.preventDefault(); pressPlay(); }
-  else if (k === 'ArrowRight') changeCourse(1);
-  else if (k === 'ArrowLeft' || k === 'PageUp') changeCourse(-1);
   else if (k === 'Escape' || k === 'b' || k === 'B') { if (G.state === 'play') pressPlay(); }
   else if (k === 'v' || k === 'V') toggleVoice();
 });
 document.getElementById('bPlay').onclick = pressPlay;
-document.getElementById('bPrev').onclick = () => changeCourse(-1);
-document.getElementById('bNext').onclick = () => changeCourse(1);
 document.getElementById('bVoice').onclick = toggleVoice;
 document.getElementById('bCam').onclick = startCamera;
 document.getElementById('ctaCam').onclick = startCamera;
 const startEl = document.getElementById('start');
 const ctaGo = document.getElementById('ctaGo');
 ctaGo.onclick = () => pressPlay();
-function renderCourseCards() {
-  const box = document.getElementById('courseCards');
-  box.innerHTML = COURSES.map((c, i) => `<button type="button" class="course${i === G.course ? ' sel' : ''}" data-i="${i}"><div class="sw" style="background:${COURSE_SW[i]}"></div><h3>${c.name}</h3><p>${c.sub}</p></button>`).join('');
-  box.querySelectorAll('.course').forEach(el => { el.onclick = () => { if (G.state === 'play') return; G.course = Number(el.dataset.i); say(COURSES[G.course].name); renderCourseCards(); startEl.dataset.course = String(G.course); }; });
-}
-renderCourseCards();
 function syncScreens() {
   const show = G.state === 'attract';
   startEl.classList.toggle('on', show);
@@ -330,9 +290,8 @@ function syncScreens() {
   document.getElementById('ctaCam').hidden = cam;
   ctaGo.hidden = !cam;
   document.getElementById('startErr').textContent = G.camError || '';
-  if (startEl.dataset.course !== String(G.course)) { renderCourseCards(); startEl.dataset.course = String(G.course); }
   const n = G.players.length;
-  document.getElementById('startSub').textContent = cam ? (n ? `${n}명 준비됨 · ◀ ▶ 코스 선택` : '카메라 앞 칸에 서세요 (전신이 보이게)') : '카메라 앞에 서면 참가 · 4명까지';
+  document.getElementById('startSub').textContent = cam ? (n ? `${n}명 준비됨 · 시작을 누르세요` : '카메라 앞 칸에 서세요 (전신이 보이게)') : '카메라 앞에 서면 참가 · 4명까지';
 }
 
 canvas.addEventListener('pointerdown', () => { if (G.state !== 'play') pressPlay(); });
