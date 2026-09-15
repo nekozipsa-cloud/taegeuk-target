@@ -192,7 +192,7 @@ function targetPos(a, kind, side) {
     case 'low':  return { x: a.cx + s * a.sw * 0.95, y: a.hipY + (a.kneeY - a.hipY) * 0.35, r: a.sw * 0.5 };   // 허벅지 중간 옆
     case 'mid':  return { x: a.cx, y: a.chestY, r: a.sw * 0.5 };                                                 // 가슴 정중앙
     case 'high': return { x: a.cx + s * a.sw * 0.15, y: a.headY - a.sw * 0.25, r: a.sw * 0.5 };
-    case 'kick': return { x: a.cx + s * a.sw * 0.55, y: a.kneeY - a.sw * 0.1, r: a.sw * 0.55 };
+    case 'kick': return { x: a.cx + s * a.sw * 0.3, y: a.kneeY - a.sw * 0.15, r: a.sw * 0.6 };   // 차는 다리 쪽, 무릎 높이
   }
 }
 
@@ -245,7 +245,9 @@ function updateTargets() {
     const parts = kind.part === 'wrist' ? a.wrists : a.ankles;
     for (const pt of parts) {
       if (!pt) continue;
-      if (Math.hypot(pt.x - pos.x, pt.y - pos.y) < pos.r) {
+      // 앞차기: 발(발목·발끝)이 무릎 높이까지 올라오면 성공. 정면 카메라에선 발이 카메라 쪽으로 나가 좌우 위치가 애매하므로 높이 위주로 본다
+      const kicked = kind.part === 'ankle' && pt.y <= pos.y + pos.r * 0.5 && Math.abs(pt.x - a.cx) < a.sw * 1.3;
+      if (kicked || Math.hypot(pt.x - pos.x, pt.y - pos.y) < pos.r) {
         t.hit = G.now; p.hits++; t.gain = 10 + Math.min(p.streak, 5) * 2; p.score += t.gain; p.streak++;
         burst(pos.x, pos.y, kind.color); sfx.hit();
         break;
