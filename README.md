@@ -1,5 +1,7 @@
 # 태극 타깃 (동작 목업)
 
+공개 주소: https://nekozipsa-cloud.github.io/taegeuk-target/ (GitHub Pages, `git push`하면 1분 안에 반영)
+
 타깃이 뜨면 맞는 높이로 친다. 아래=아래막기, 몸통=지르기, 얼굴=얼굴막기, 무릎=앞차기.
 판정은 "맞는 신체 부위가 타깃에 닿았는가" 하나. 놓치면 조용히 사라진다.
 
