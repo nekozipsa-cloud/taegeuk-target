@@ -43,10 +43,12 @@
   /* 오른쪽: 코스 카드 2×2 (시안) */
   .eyebrow, .title, .sub, .cta, .err, .foot { z-index: 1; }
   .courses { z-index: 1; position: absolute; right: 6vw; top: 50%; transform: translateY(-50%); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4vw; width: 30vw; max-width: 400px; }
-  .course { border-radius: 26px; background: rgba(255,255,255,0.72); box-shadow: 0 12px 40px rgba(60,80,120,0.16); border: 2px solid transparent; padding: 1.6vw 1.5vw; display: flex; flex-direction: column; gap: 8px; transition: transform .15s, box-shadow .15s; }
+  .course { font: inherit; color: inherit; text-align: left; cursor: pointer; border-radius: 26px; background: rgba(255,255,255,0.72); box-shadow: 0 12px 40px rgba(60,80,120,0.16); border: 2px solid transparent; padding: 1.6vw 1.5vw; display: flex; flex-direction: column; gap: 8px; transition: transform .15s, box-shadow .15s; }
   .course .sw { width: 44px; height: 44px; border-radius: 14px; }
   .course h3 { margin: 0; font-family: "Noto Sans KR", sans-serif; font-weight: 900; font-size: clamp(18px, 1.9vw, 24px); }
   .course p { margin: 0; font-size: clamp(12px, 1.05vw, 14px); font-weight: 700; color: #7a82a6; }
+  .course:focus-visible { outline: 3px solid var(--pink); }
+  .coursehint { z-index: 1; position: absolute; right: 6vw; top: calc(50% + 24vh); width: 30vw; max-width: 400px; text-align: center; font-size: clamp(11px, 1.05vw, 14px); font-weight: 700; color: var(--ink3); }
   .course.sel { border-color: var(--pink); transform: translateY(-6px) scale(1.03); box-shadow: 0 22px 50px rgba(255,122,162,0.28); }
 </style>
 </head>
@@ -74,6 +76,7 @@
   <button id="ctaGo" class="cta go" hidden><span>▶&nbsp; 시작</span></button>
   <div id="startErr" class="err"></div>
   <div class="courses" id="courseCards"></div>
+  <div class="coursehint">카드를 눌러 코스 선택 · 리모컨 ◀ ▶ · 차기는 "차기"와 "태극 1장" 코스에 나옵니다</div>
   <div class="foot">카메라 한 대 · 빔프로젝터 · 리모컨 버튼 하나</div>
 </div>
 
@@ -314,7 +317,8 @@ const ctaGo = document.getElementById('ctaGo');
 ctaGo.onclick = () => pressPlay();
 function renderCourseCards() {
   const box = document.getElementById('courseCards');
-  box.innerHTML = COURSES.map((c, i) => `<div class="course${i === G.course ? ' sel' : ''}"><div class="sw" style="background:${COURSE_SW[i]}"></div><h3>${c.name}</h3><p>${c.sub}</p></div>`).join('');
+  box.innerHTML = COURSES.map((c, i) => `<button type="button" class="course${i === G.course ? ' sel' : ''}" data-i="${i}"><div class="sw" style="background:${COURSE_SW[i]}"></div><h3>${c.name}</h3><p>${c.sub}</p></button>`).join('');
+  box.querySelectorAll('.course').forEach(el => { el.onclick = () => { if (G.state === 'play') return; G.course = Number(el.dataset.i); say(COURSES[G.course].name); renderCourseCards(); startEl.dataset.course = String(G.course); }; });
 }
 renderCourseCards();
 function syncScreens() {
