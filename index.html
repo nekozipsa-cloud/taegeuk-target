@@ -20,29 +20,29 @@
   #toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); background: rgba(255,255,255,0.92); color: var(--ink2); font-weight: 700; font-size: 15px; padding: 10px 18px; border-radius: 20px; box-shadow: 0 12px 30px rgba(60,80,120,0.18); z-index: 9; opacity: 0; transition: opacity .3s; pointer-events: none; }
   #toast.on { opacity: 1; }
 
-  /* ── 시작 화면 (글래스 파스텔, G 시안) ── */
+  /* ── 시작 화면 (A 시안: 글래스 파스텔 + 품세 카드 4×2) ── */
   .screen { position: fixed; inset: 0; z-index: 5; display: none; overflow: hidden; }
   .screen.on { display: block; }
   #start { background: radial-gradient(circle at 15% 20%, #ffd6e8 0%, transparent 45%), radial-gradient(circle at 85% 15%, #d8e6ff 0%, transparent 45%), radial-gradient(circle at 60% 90%, #d9fff0 0%, transparent 50%), #f7f8fc; }
   #start.cam { background: rgba(247,248,252,0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-  .bgart { position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%); height: 92vh; width: auto; opacity: 0.28; pointer-events: none; user-select: none; }
-  #start.cam .bgart { display: none; }
-  .eyebrow { position: absolute; left: 6.5vw; top: 9vh; font-size: clamp(12px, 1.2vw, 16px); font-weight: 800; letter-spacing: 4px; color: #7a82a6; }
-  .title { position: absolute; left: 6.5vw; top: 20vh; width: 52vw; font-family: "Noto Sans KR", sans-serif; font-weight: 900; font-size: clamp(34px, 5vw, 64px); line-height: 1.15; letter-spacing: -1px; }
-  .title em { font-style: normal; background: linear-gradient(90deg, var(--pink), var(--orange)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .sub { position: absolute; left: 6.5vw; top: 46vh; font-size: clamp(14px, 1.6vw, 20px); font-weight: 700; color: var(--ink2); }
-  .cta { position: absolute; left: 6.5vw; top: 57vh; height: clamp(64px, 9vh, 96px); padding: 0 3vw; border: 0; border-radius: 999px; background: linear-gradient(90deg, var(--pink), var(--orange)); box-shadow: 0 18px 40px rgba(255,122,162,0.4); display: flex; align-items: center; gap: 14px; cursor: pointer; color: #fff; font-family: "Noto Sans KR", sans-serif; font-weight: 900; font-size: clamp(18px, 2.3vw, 30px); }
-  .cta[hidden] { display: none; }
-  .cta:focus-visible { outline: 3px solid var(--ink); }
-  .cta.wait { filter: saturate(0.4); }
-  .cta.go { background: rgba(255,255,255,0.85); color: var(--ink); box-shadow: 0 14px 40px rgba(60,80,120,0.2); animation: pulse 1.2s ease-in-out infinite; }
-  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
-  @media (prefers-reduced-motion: reduce) { .cta.go { animation: none; } }
-  .err { position: absolute; left: 6.5vw; top: 72vh; width: 52vw; font-size: clamp(13px, 1.3vw, 16px); font-weight: 700; color: #e0506e; }
-  .foot { position: absolute; left: 6.5vw; bottom: 6vh; font-size: clamp(11px, 1.1vw, 15px); font-weight: 700; color: var(--ink3); }
-  /* 오른쪽 아래: 나오는 동작 네 가지 (선택 아님, 안내) */
-  .moves { z-index: 1; position: absolute; left: 6.5vw; bottom: 13vh; display: flex; gap: 10px; flex-wrap: wrap; }
-  .moves span { padding: 8px 16px; border-radius: 999px; font-family: "Noto Sans KR", sans-serif; font-weight: 800; font-size: clamp(12px, 1.2vw, 16px); color: var(--ink2); box-shadow: 0 8px 20px rgba(60,80,120,0.12); }
+  .brand { position: absolute; left: 0; right: 0; top: 7vh; margin: 0; display: flex; align-items: center; justify-content: center; gap: clamp(12px, 1.6vw, 28px); font-family: "Noto Sans KR", sans-serif; font-weight: 700; font-size: clamp(22px, 3.4vw, 56px); letter-spacing: -0.5px; color: var(--ink); }
+  .brand img { height: clamp(44px, min(7vw, 12vh), 120px); width: auto; display: block; }
+  .cards { position: absolute; left: 5vw; right: 5vw; top: 26vh; bottom: 20vh; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; gap: 3vh 3vw; }
+  .card { position: relative; border-radius: clamp(14px, 2.2vw, 36px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6vw; padding: 0; border: 0.15vw solid rgba(255,255,255,0.9); background: rgba(255,255,255,0.55); color: #b4b9cf; box-shadow: 0 1vw 2.6vw rgba(60,80,120,0.08); font-family: "Noto Sans KR", sans-serif; font-weight: 800; font-size: clamp(18px, 2.6vw, 44px); text-align: center; cursor: default; }
+  .card .chip { font-size: clamp(10px, 1.15vw, 18px); font-weight: 700; letter-spacing: 1px; padding: 0.35vw 1vw; border-radius: 999px; margin-top: 0.6vw; background: rgba(90,98,130,0.08); color: #9aa1bf; }
+  .card.on { cursor: pointer; background: linear-gradient(135deg, var(--pink), var(--orange)); color: #fff; box-shadow: 0 1.8vw 4vw rgba(255,122,162,0.45); animation: beat 1.6s ease-in-out infinite; }
+  .card.on .chip { background: rgba(255,255,255,0.28); color: #fff; }
+  .card.on::after { content: ""; position: absolute; inset: -0.3vw; border-radius: inherit; border: 0.35vw solid rgba(255,122,162,0.7); pointer-events: none; animation: ring 1.6s ease-out infinite; }
+  .card.on:focus-visible { outline: 0.4vw solid var(--ink); outline-offset: 0.4vw; }
+  .card.on.wait { animation: none; filter: saturate(0.45); }
+  .card.on.wait::after { animation: none; opacity: 0; }
+  @keyframes beat { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.035); } }
+  @keyframes ring { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.18); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .card.on, .card.on::after { animation: none; } }
+  .sub { position: absolute; left: 0; right: 0; bottom: 11vh; text-align: center; font-size: clamp(14px, 1.7vw, 24px); font-weight: 800; color: var(--ink2); }
+  .err { position: absolute; left: 10vw; right: 10vw; bottom: 5vh; text-align: center; font-size: clamp(12px, 1.3vw, 16px); font-weight: 700; color: #e0506e; }
+  .foot { position: absolute; left: 0; right: 0; bottom: 5vh; text-align: center; font-size: clamp(11px, 1.1vw, 15px); font-weight: 700; color: var(--ink3); }
+  .err:not(:empty) ~ .foot { display: none; }
 </style>
 </head>
 <body>
@@ -59,15 +59,21 @@
 <div id="toast"></div>
 
 <div id="start" class="screen">
-  <img class="bgart" src="assets/bg-pose.png" alt="">
-  <div class="eyebrow">태극 타깃</div>
-  <div class="title">태극 1장 핵심 동작<br><em>AR 학습</em></div>
-  <div id="startSub" class="sub">카메라 앞에 서면 참가 · 4명까지</div>
-  <button id="ctaCam" class="cta"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h2l1.5-2h5L16 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg><span>카메라 켜기</span></button>
-  <button id="ctaGo" class="cta go" hidden><span>▶&nbsp; 시작</span></button>
+  <h1 class="brand"><img src="assets/logo-playcon.png" alt="PLAYCON"><span>태권도 품세 연습</span></h1>
+  <div class="cards">
+    <button id="card1" class="card on" type="button"><span>태극 1장</span><span id="card1Chip" class="chip">누르면 시작</span></button>
+    <div class="card" aria-disabled="true"><span>태극 2장</span><span class="chip">준비 중</span></div>
+    <div class="card" aria-disabled="true"><span>태극 3장</span><span class="chip">준비 중</span></div>
+    <div class="card" aria-disabled="true"><span>태극 4장</span><span class="chip">준비 중</span></div>
+    <div class="card" aria-disabled="true"><span>태극 5장</span><span class="chip">준비 중</span></div>
+    <div class="card" aria-disabled="true"><span>태극 6장</span><span class="chip">준비 중</span></div>
+    <div class="card" aria-disabled="true"><span>태극 7장</span><span class="chip">준비 중</span></div>
+    <div class="card" aria-disabled="true"><span>태극 8장</span><span class="chip">준비 중</span></div>
+  </div>
+  <div id="startSub" class="sub">태극 1장을 누르면 카메라가 켜지고 바로 시작합니다 · 4명까지</div>
   <div id="startErr" class="err"></div>
-  <div class="moves"><span style="background:#d9fff0">아래막기</span><span style="background:#fff0c2">몸통지르기</span><span style="background:#ffe1ea">얼굴막기</span><span style="background:#d8e6ff">앞차기</span></div>
   <div class="foot">카메라 한 대 · 빔프로젝터 · 리모컨 버튼 하나</div>
+</div>
 </div>
 
 <script type="module">
@@ -156,6 +162,8 @@ const G = {
   particles: [],
   mode: 'none',               // none | camera
   camError: null,
+  camLoading: false,
+  armed: false,               // 카드를 눌러 두었으면 사람이 보이는 순간 시작
 };
 const LANE_COLORS = ['#ff7aa2', '#6fb1ff', '#2fd38a', '#ffb347'];
 window.__G = G;   // 점검용
@@ -244,8 +252,9 @@ function burst(x, y, color) {
 
 /* ── 라운드 흐름 ───────────────────────────────────────── */
 function startRound() {
-  if (G.mode === 'none') { startCamera(); return; }
+  if (G.mode === 'none') { G.armed = true; startCamera(); return; }
   if (!G.players.length) { toast('카메라 앞 칸에 서면 참가됩니다'); return; }
+  G.armed = false;
   const c = COURSES[G.course];
   for (const p of G.players) Object.assign(p, { score: 0, hits: 0, shown: 0, streak: 0, target: null });
   G.seqIndex = 0; G.cur = null; G.window = 2400; G.lastEnd = G.now + 900; G.lastKind = null;
@@ -263,8 +272,8 @@ function endRound() {
 function stars(p) { if (!p.shown) return 0; const r = p.hits / p.shown; return r >= 0.8 ? 3 : r >= 0.5 ? 2 : 1; }
 function changeCourse() { /* 코스는 하나뿐 */ }
 function pressPlay() {
-  if (G.state === 'play') { G.state = 'attract'; G.cur = null; for (const p of G.players) p.target = null; say('정지'); return; }
-  startRound();
+  if (G.state === 'play') { G.state = 'attract'; G.armed = false; G.cur = null; for (const p of G.players) p.target = null; say('정지'); return; }
+  if (G.state === 'attract') pickCard();
 }
 
 /* ── 입력: 리모컨은 키보드 이벤트로 들어온다 ─────────── */
@@ -277,24 +286,33 @@ window.addEventListener('keydown', (e) => {
 document.getElementById('bPlay').onclick = pressPlay;
 document.getElementById('bVoice').onclick = toggleVoice;
 document.getElementById('bCam').onclick = startCamera;
-document.getElementById('ctaCam').onclick = startCamera;
 const startEl = document.getElementById('start');
-const ctaGo = document.getElementById('ctaGo');
-ctaGo.onclick = () => pressPlay();
+const card1 = document.getElementById('card1');
+/* 태극 1장 카드: 누르면 카메라를 켜고, 사람이 보이는 순간 바로 시작한다 */
+function pickCard() {
+  if (G.state !== 'attract') return;
+  G.armed = true; G.camError = null;
+  if (G.mode === 'none') startCamera();
+  else if (G.players.length) startRound();
+  else toast('카메라 앞 칸에 서면 바로 시작됩니다');
+}
+card1.onclick = pickCard;
 function syncScreens() {
   const show = G.state === 'attract';
   startEl.classList.toggle('on', show);
   if (!show) return;
   const cam = G.mode === 'camera';
   startEl.classList.toggle('cam', cam);
-  document.getElementById('ctaCam').hidden = cam;
-  ctaGo.hidden = !cam;
+  card1.classList.toggle('wait', G.camLoading);
   document.getElementById('startErr').textContent = G.camError || '';
   const n = G.players.length;
-  document.getElementById('startSub').textContent = cam ? (n ? `${n}명 준비됨 · 시작을 누르세요` : '카메라 앞 칸에 서세요 (전신이 보이게)') : '카메라 앞에 서면 참가 · 4명까지';
+  document.getElementById('card1Chip').textContent = G.camLoading ? '카메라 준비 중…' : (cam ? (G.armed ? '곧 시작' : '누르면 시작') : '누르면 시작');
+  document.getElementById('startSub').textContent = !cam
+    ? (G.camLoading ? '카메라를 켜는 중입니다' : '태극 1장을 누르면 카메라가 켜지고 바로 시작합니다 · 4명까지')
+    : (n ? (G.armed ? `${n}명 준비됨 · 시작합니다` : `${n}명 준비됨 · 태극 1장을 누르세요`) : '카메라 앞 칸에 서세요 (전신이 보이게)');
 }
 
-canvas.addEventListener('pointerdown', () => { if (G.state !== 'play') pressPlay(); });
+canvas.addEventListener('pointerdown', () => { if (G.state === 'result') { G.state = 'attract'; } });
 function toggleVoice() { voiceOn = !voiceOn; document.getElementById('bVoice').textContent = voiceOn ? '구령 켜짐' : '구령 꺼짐'; if (!voiceOn) speechSynthesis?.cancel(); }
 
 /* ── 카메라 + MediaPipe ───────────────────────────────── */
@@ -303,7 +321,8 @@ const tracked = [];   // {id, cx, lastSeen}
 window.__tracked = tracked;   // 점검용
 async function startCamera() {
   const b = document.getElementById('bCam'); b.disabled = true; b.textContent = '준비 중…';
-  const cta = document.getElementById('ctaCam'); cta.disabled = true; cta.classList.add('wait'); cta.querySelector('span').textContent = '준비 중…';
+  if (G.camLoading) return;
+  G.camLoading = true;
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }, audio: false });
     video.srcObject = stream; video.hidden = false;
@@ -321,12 +340,12 @@ async function startCamera() {
         break;
       } catch (e) { if (delegate === 'CPU') throw e; }
     }
-    G.mode = 'camera'; b.textContent = '카메라 켜짐';
-    toast('카메라 앞에 서면 참가됩니다 (4명까지)');
+    G.mode = 'camera'; G.camLoading = false; b.textContent = '카메라 켜짐';
+    toast('카메라 앞에 서면 바로 시작됩니다 (4명까지)');
   } catch (e) {
     console.warn(e);
     b.disabled = false; b.textContent = '카메라 켜기';
-    cta.disabled = false; cta.classList.remove('wait'); cta.querySelector('span').textContent = '카메라 켜기';
+    G.camLoading = false; G.armed = false;
     G.camError = (location.protocol === 'https:' && !location.hostname.includes('localhost'))
       ? '이 웹 링크에서는 카메라를 쓸 수 없습니다. 도장 PC에서 "태극 타깃 시작.command"로 열어 주세요.'
       : '카메라를 열지 못했습니다. 브라우저의 카메라 허용을 확인해 주세요. (' + (e && e.message ? e.message : e) + ')';
@@ -582,6 +601,8 @@ function loop(ts) {
       if (sec <= 5 && sec !== lastTickSec && sec > 0) { lastTickSec = sec; sfx.tick(); }
       if (left <= 0) endRound();
     }
+  } else if (G.state === 'attract' && G.armed && G.mode === 'camera' && G.players.length) {
+    startRound();
   } else if (G.state === 'result' && G.now - G.resultAt > 8000) {
     G.state = 'attract';
   }
