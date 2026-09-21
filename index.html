@@ -115,7 +115,7 @@ const FONT_NUM = '"Nunito", "Noto Sans KR", sans-serif';
 const FONT_KO = '"Noto Sans KR", "Nunito", sans-serif';
 
 /* ── 품세별 코스: 그 장의 핵심 동작을 섞어서 60초 ─────────
-   chain: 앞차기 타깃 바로 뒤에 지르기 타깃을 이어 띄운다 (태극 2장의 핵심 '앞차고 지르기')
+   chain: 앞차기가 나올 때 함께 묶일 지르기 종류 (태극 2장의 핵심 '앞차고 지르기' = 한 과제 두 박자)
    highLift: 얼굴막기 타깃을 머리 위로 더 올려 얼굴지르기 타깃과 겹치지 않게 한다 */
 const COURSES = [
   { id: 'tg1', name: '태극 1장', sub: '아래막기 · 몸통지르기 · 얼굴막기 · 앞차기', seconds: 60,
@@ -141,6 +141,7 @@ function beep(freq, dur = 0.12, type = 'sine', gain = 0.25) {
 }
 const sfx = {
   spawn: () => beep(660, 0.08, 'triangle', 0.12),
+  kick:  () => beep(740, 0.09, 'square', 0.16),
   hit:   () => { beep(880, 0.12, 'square', 0.18); setTimeout(() => beep(1320, 0.16, 'square', 0.14), 60); },
   start: () => { beep(523, 0.1); setTimeout(() => beep(659, 0.1), 120); setTimeout(() => beep(784, 0.2), 240); },
   end:   () => { beep(784, 0.15); setTimeout(() => beep(1047, 0.35), 160); },
@@ -171,7 +172,6 @@ const G = {
   camError: null,
   camLoading: false,
   armed: false,               // 카드를 눌러 두었으면 사람이 보이는 순간 시작
-  chainNext: null,            // 앞차기 뒤에 바로 이어질 지르기 종류
 };
 const LANE_COLORS = ['#ff7aa2', '#6fb1ff', '#2fd38a', '#ffb347'];
 window.__G = G;   // 점검용
@@ -194,33 +194,29 @@ function targetPos(a, kind, side) {
 /* ── 타깃 만들기·판정: 모두 같은 동작을 같은 순간에 ──────
    타깃은 한 번에 하나(G.cur)만 뜨고, 참가자 전원이 같은 종류·같은 쪽을 받는다.
    판정과 점수만 사람별로 따로 한다. */
-function spawnShared(kind, dir, chain = false) {
-  if (!chain) G.side = G.side === 'L' ? 'R' : 'L';      // 이어 지르기는 찬 쪽 그대로
-  G.cur = { kind, side: G.side, dir, born: G.now, window: G.window, done: false, chain };
-  for (const p of G.players) {
-    if (!chain) p.kickHit = false;
-    p.target = { kind, side: G.side, dir, born: G.now, window: G.window, hit: 0, chain }; p.shown++;
-  }
-  sfx.spawn(); say(KIND[kind].voice);
+function spawnShared(kind, dir, next = null) {
+  // next가 있으면 '차고 지르기' 한 과제: 차기 타깃과 지르기 타깃을 함께 띄우고, 차는 순간 그 사람의 지르기 타깃이 바로 켜진다
+  G.side = G.side === 'L' ? 'R' : 'L';
+  const win = next ? Math.round(G.window * 1.6) : G.window;
+  G.cur = { kind, next, side: G.side, dir, born: G.now, window: win, done: false };
+  for (const p of G.players) { p.target = { kind, next, side: G.side, dir, born: G.now, window: win, hit: 0, kickHitAt: 0 }; p.shown += next ? 2 : 1; }
+  sfx.spawn(); say(next ? '앞차고 ' + KIND[next].voice : KIND[kind].voice);
 }
 function joinCurrent(p) {   // 라운드 중간에 들어온 사람도 지금 타깃을 같이 받는다
   const c = G.cur; if (!c || c.done) return;
-  p.target = { kind: c.kind, side: c.side, dir: c.dir, born: c.born, window: c.window, hit: 0, chain: c.chain }; p.shown++;
+  p.target = { kind: c.kind, next: c.next, side: c.side, dir: c.dir, born: c.born, window: c.window, hit: 0, kickHitAt: 0 }; p.shown += c.next ? 2 : 1;
 }
 
 function updateTargets() {
   const c = COURSES[G.course];
   if (!G.cur) {
-    if (G.chainNext) {                       // 앞차기 직후: 쉬지 않고 바로 지르기
-      if (G.now - G.lastEnd > 180) { const k = G.chainNext; G.chainNext = null; spawnShared(k, null, true); G.lastKind = k; }
-      return;
-    }
     if (G.now - G.lastEnd > 650) {
       if (c.seq) {
         if (G.seqIndex >= c.seq.length) return;
         const [dir, kind] = c.seq[G.seqIndex]; spawnShared(kind, dir);
       } else {
-        spawnShared(c.next(G.lastKind), null);
+        const kind = c.next(G.lastKind);
+        spawnShared(kind, null, kind === 'kick' && c.chain ? c.chain() : null);
       }
       G.lastKind = G.cur.kind;
     }
@@ -235,29 +231,37 @@ function updateTargets() {
     for (const p of G.players) if (!p.target || !p.target.hit) p.streak = 0;
   }
   if (cur.done) {
-    if (G.now - cur.doneAt > (cur.kind === 'kick' && c.chain ? 250 : 450)) {
-      if (c.chain && cur.kind === 'kick' && !cur.chain && G.state === 'play') G.chainNext = c.chain();
-      G.cur = null; G.lastEnd = G.now; for (const p of G.players) p.target = null; if (c.seq) G.seqIndex++;
-    }
+    if (G.now - cur.doneAt > 450) { G.cur = null; G.lastEnd = G.now; for (const p of G.players) p.target = null; if (c.seq) G.seqIndex++; }
     return;
   }
   if (age < 350) return;            // 나타나는 중에는 판정 안 함
   for (const p of G.players) {
     const t = p.target; if (!t || t.hit) continue;
     const a = p.anchors; if (!a) continue;
-    const pos = targetPos(a, t.kind, t.side);
-    const kind = KIND[t.kind];
+    // 지금 맞혀야 할 것: 연속 과제에서 차기를 이미 맞혔으면 지르기, 아니면 원래 타깃
+    const second = !!(t.next && t.kickHitAt);
+    const k = second ? t.next : t.kind;
+    const pos = targetPos(a, k, t.side);
+    const kind = KIND[k];
     const parts = kind.part === 'wrist' ? a.wrists : a.ankles;
-    for (const pt of parts) {
-      if (!pt) continue;
+    for (let i = 0; i < parts.length; i++) {
+      const pt = parts[i]; if (!pt) continue;
+      // 차는 순간 이미 지르기 자리에 있던 손(겨룸새로 가슴 앞에 둔 손)은 한 번 빠져나갔다 들어와야 지르기로 친다
+      if (second && t.blocked && t.blocked[i]) { if (Math.hypot(pt.x - pos.x, pt.y - pos.y) > pos.r * 1.15) t.blocked[i] = false; continue; }
       // 앞차기: 발(발목·발끝)이 무릎 높이까지 올라오면 성공. 정면 카메라에선 발이 카메라 쪽으로 나가 좌우 위치가 애매하므로 높이 위주로 본다
       const kicked = kind.part === 'ankle' && pt.y <= pos.y + pos.r * 0.5 && Math.abs(pt.x - a.cx) < a.sw * 1.3;
       if (kicked || Math.hypot(pt.x - pos.x, pt.y - pos.y) < pos.r) {
-        t.hit = G.now; p.hits++; t.gain = 10 + Math.min(p.streak, 5) * 2;
-        if (t.kind === 'kick') p.kickHit = true;
-        if (t.chain && p.kickHit) { t.gain += 10; t.combo = true; p.kickHit = false; }   // 차고 지르기 둘 다 성공
-        p.score += t.gain; p.streak++;
-        burst(pos.x, pos.y, kind.color); sfx.hit();
+        const base = 10 + Math.min(p.streak, 5) * 2;
+        p.hits++; p.streak++;
+        if (t.next && !second) {          // 첫 박자(차기): 기다림 없이 그 사람의 지르기 타깃이 바로 켜진다
+          t.kickHitAt = G.now; t.gain1 = base; p.score += base;
+          const p2 = targetPos(a, t.next, t.side);
+          t.blocked = a.wrists.map(w => !!w && Math.hypot(w.x - p2.x, w.y - p2.y) < p2.r);
+          burst(pos.x, pos.y, kind.color); sfx.kick();
+        } else {                          // 단일 타깃, 또는 둘째 박자(지르기)
+          t.hit = G.now; t.combo = second; t.gain = base + (second ? 10 : 0); p.score += t.gain;
+          burst(pos.x, pos.y, kind.color); sfx.hit();
+        }
         break;
       }
     }
@@ -279,7 +283,7 @@ function startRound() {
   G.armed = false;
   const c = COURSES[G.course];
   for (const p of G.players) Object.assign(p, { score: 0, hits: 0, shown: 0, streak: 0, target: null });
-  G.seqIndex = 0; G.cur = null; G.chainNext = null; G.window = 2400; G.lastEnd = G.now + 900; G.lastKind = null;
+  G.seqIndex = 0; G.cur = null; G.window = 2400; G.lastEnd = G.now + 900; G.lastKind = null;
   G.state = 'play'; G.tStart = G.now;
   G.tEnd = c.seconds ? G.now + c.seconds * 1000 : 0;
   sfx.start(); say(c.name + ' 시작');
@@ -294,7 +298,7 @@ function endRound() {
 function stars(p) { if (!p.shown) return 0; const r = p.hits / p.shown; return r >= 0.8 ? 3 : r >= 0.5 ? 2 : 1; }
 function changeCourse() { /* 코스는 하나뿐 */ }
 function pressPlay() {
-  if (G.state === 'play') { G.state = 'attract'; G.armed = false; G.cur = null; G.chainNext = null; for (const p of G.players) p.target = null; say('정지'); return; }
+  if (G.state === 'play') { G.state = 'attract'; G.armed = false; G.cur = null; for (const p of G.players) p.target = null; say('정지'); return; }
   if (G.state === 'attract') pickCard();
 }
 
@@ -489,40 +493,66 @@ function drawPlayerMark(p) {
   }
 }
 
-function drawTarget(p) {
-  const t = p.target, a = p.anchors; if (!a) return;
-  const pos = targetPos(a, t.kind, t.side);
-  const kind = KIND[t.kind];
-  const age = G.now - t.born;
-  if (t.hit) {   // 흰 링 확산 + 컨페티(파티클) + 점수 필
-    const k = Math.min(1, (G.now - t.hit) / 450);
-    ctx.globalAlpha = 1 - k;
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 8; shadow(kind.color, 20); ctx.beginPath(); ctx.arc(pos.x, pos.y, pos.r * (0.7 + k * 1.3), 0, Math.PI * 2); ctx.stroke(); noShadow();
-    ctx.strokeStyle = kind.color; ctx.lineWidth = 4; ctx.globalAlpha = 0.5 * (1 - k); ctx.beginPath(); ctx.arc(pos.x, pos.y, pos.r * (1 + k * 1.8), 0, Math.PI * 2); ctx.stroke();
-    ctx.globalAlpha = 1;
-    // +점수 필 (살짝 기울여 튀어오름)
-    const px = pos.x + pos.r * 1.15, py = pos.y - pos.r * (0.9 + k * 0.5), fs = Math.round(pos.r * 0.7);
-    ctx.save(); ctx.translate(px, py); ctx.rotate(-0.1); ctx.globalAlpha = 1 - Math.max(0, k - 0.6) * 2.5;
-    ctx.font = `900 ${fs}px ${FONT_NUM}`; const tw = ctx.measureText('+' + t.gain).width;
-    glassBox(-tw / 2 - fs * 0.5, -fs * 0.75, tw + fs, fs * 1.5, fs * 0.75, 0.95);
-    txt('+' + t.gain, 0, fs * 0.05, fs, { font: FONT_NUM, color: t.combo ? PINK : ORANGE });
-    if (t.combo) txt('차고 지르기!', 0, -fs * 1.25, Math.round(fs * 0.6), { color: PINK });
-    ctx.restore(); ctx.globalAlpha = 1;
-    return;
-  }
-  const grow = ease(Math.min(1, age / 350));
-  const r = pos.r * grow;
-  const left = Math.max(0, 1 - Math.max(0, age - 350) / (150 + t.window));
-  // 파스텔 원반: 흰 중심 → 색
+function drawHitFx(pos, kind, since, gain, comboText) {   // 흰 링 확산 + 점수 필
+  const k = Math.min(1, (G.now - since) / 450);
+  if (k >= 1) return;
+  ctx.globalAlpha = 1 - k;
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 8; shadow(kind.color, 20); ctx.beginPath(); ctx.arc(pos.x, pos.y, pos.r * (0.7 + k * 1.3), 0, Math.PI * 2); ctx.stroke(); noShadow();
+  ctx.strokeStyle = kind.color; ctx.lineWidth = 4; ctx.globalAlpha = 0.5 * (1 - k); ctx.beginPath(); ctx.arc(pos.x, pos.y, pos.r * (1 + k * 1.8), 0, Math.PI * 2); ctx.stroke();
+  ctx.globalAlpha = 1;
+  // +점수 필 (살짝 기울여 튀어오름)
+  const px = pos.x + pos.r * 1.15, py = pos.y - pos.r * (0.9 + k * 0.5), fs = Math.round(pos.r * 0.7);
+  ctx.save(); ctx.translate(px, py); ctx.rotate(-0.1); ctx.globalAlpha = 1 - Math.max(0, k - 0.6) * 2.5;
+  ctx.font = `900 ${fs}px ${FONT_NUM}`; const tw = ctx.measureText('+' + gain).width;
+  glassBox(-tw / 2 - fs * 0.5, -fs * 0.75, tw + fs, fs * 1.5, fs * 0.75, 0.95);
+  txt('+' + gain, 0, fs * 0.05, fs, { font: FONT_NUM, color: comboText ? PINK : ORANGE });
+  if (comboText) txt(comboText, 0, -fs * 1.25, Math.round(fs * 0.6), { color: PINK });
+  ctx.restore(); ctx.globalAlpha = 1;
+}
+function drawDisc(pos, kind, r, left, ghost) {   // 파스텔 원반. ghost = 아직 차례가 아닌 예고 타깃
+  if (ghost) ctx.globalAlpha = 0.5;
   const g = ctx.createRadialGradient(pos.x - r * 0.25, pos.y - r * 0.3, r * 0.05, pos.x, pos.y, r);
   g.addColorStop(0, '#ffffff'); g.addColorStop(0.5, kind.color); g.addColorStop(1, shadeColor(kind.color, 0.78));
-  shadow(kind.color, 28, 12); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2); ctx.fill(); noShadow();
-  // 흰 진행 링
-  ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 7; ctx.beginPath(); ctx.arc(pos.x, pos.y, r + 16, 0, Math.PI * 2); ctx.stroke();
-  ctx.strokeStyle = '#fff'; ctx.lineWidth = 8; ctx.lineCap = 'round'; shadow('rgba(60,80,120,0.25)', 10, 2);
-  ctx.beginPath(); ctx.arc(pos.x, pos.y, r + 16, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * left); ctx.stroke(); noShadow();
-  // 라벨: 원 안 (진한 색)
+  if (!ghost) shadow(kind.color, 28, 12);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2); ctx.fill(); noShadow();
+  if (ghost) {
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.setLineDash([10, 9]); ctx.beginPath(); ctx.arc(pos.x, pos.y, r + 12, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+  } else {   // 흰 진행 링
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 7; ctx.beginPath(); ctx.arc(pos.x, pos.y, r + 16, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 8; ctx.lineCap = 'round'; shadow('rgba(60,80,120,0.25)', 10, 2);
+    ctx.beginPath(); ctx.arc(pos.x, pos.y, r + 16, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * left); ctx.stroke(); noShadow();
+  }
   txt(kind.label, pos.x, pos.y + r * 0.04, Math.round(r * 0.5), { color: kind.dark });
+  ctx.globalAlpha = 1;
+}
+function drawTarget(p) {
+  const t = p.target, a = p.anchors; if (!a) return;
+  const age = G.now - t.born;
+  const grow = ease(Math.min(1, age / 350));
+  const left = Math.max(0, 1 - Math.max(0, age - 350) / (150 + (t.window || 2400)));
+  const pos = targetPos(a, t.kind, t.side), kind = KIND[t.kind];
+  if (!t.next) {                       // 단일 타깃
+    if (t.hit) drawHitFx(pos, kind, t.hit, t.gain);
+    else drawDisc(pos, kind, pos.r * grow, left, false);
+    return;
+  }
+  // 차고 지르기: 두 타깃을 한 과제로. 차기(①) → 지르기(②)
+  const pos2 = targetPos(a, t.next, t.side), kind2 = KIND[t.next];
+  if (!t.kickHitAt) {
+    // 이어지는 길: 차기에서 지르기로 가는 점선 화살
+    ctx.globalAlpha = 0.85 * grow; ctx.strokeStyle = '#fff'; ctx.lineWidth = 6; ctx.lineCap = 'round'; ctx.setLineDash([2, 16]);
+    const dx = pos2.x - pos.x, dy = pos2.y - pos.y, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
+    const x1 = pos.x + ux * (pos.r + 26), y1 = pos.y + uy * (pos.r + 26), x2 = pos2.x - ux * (pos2.r * 0.8 + 26), y2 = pos2.y - uy * (pos2.r * 0.8 + 26);
+    shadow('rgba(60,80,120,0.3)', 8, 2); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(x2 - ux * 18 - uy * 12, y2 - uy * 18 + ux * 12); ctx.lineTo(x2, y2); ctx.lineTo(x2 - ux * 18 + uy * 12, y2 - uy * 18 - ux * 12); ctx.stroke(); noShadow();
+    ctx.globalAlpha = 1;
+    drawDisc(pos2, kind2, pos2.r * 0.8 * grow, 0, true);      // 예고: 다음은 여기
+    drawDisc(pos, kind, pos.r * grow, left, false);
+    return;
+  }
+  drawHitFx(pos, kind, t.kickHitAt, t.gain1);                 // 첫 박자 성공
+  if (t.hit) drawHitFx(pos2, kind2, t.hit, t.gain, '차고 지르기!');
+  else { const pop = 0.8 + 0.2 * ease(Math.min(1, (G.now - t.kickHitAt) / 120)); drawDisc(pos2, kind2, pos2.r * pop, left, false); }
 }
 function ease(k) { return 1 - Math.pow(1 - k, 3); }
 function shadeColor(hex, f) { const n = parseInt(hex.slice(1), 16); return `rgb(${(((n >> 16) & 255) * f) | 0},${(((n >> 8) & 255) * f) | 0},${((n & 255) * f) | 0})`; }
@@ -584,11 +614,11 @@ function drawHUD() {
   const t0 = (G.cur && !G.cur.done) ? G.cur : null;
   if (t0) {
     const fs = Math.round(u * 0.06); ctx.font = `900 ${fs}px ${FONT_KO}`;
-    const label = (t0.chain ? '차고 ▸ ' : '') + KIND[t0.kind].voice, tw = ctx.measureText(label + ' !').width + fs * 1.6;
+    const label = t0.next ? '앞차고 ' + KIND[t0.next].voice : KIND[t0.kind].voice, tw = ctx.measureText(label + ' !').width + fs * 1.6;
     const x = W / 2 - tw / 2, y = H - u * 0.055 - fs;
     glassBox(x, y, tw, fs * 1.55, fs * 0.78, 0.86);
     txt(label, W / 2 - fs * 0.3, y + fs * 0.8, fs, { color: INK });
-    txt('!', W / 2 + ctx.measureText(label).width / 2 + fs * 0.1, y + fs * 0.8, fs, { color: KIND[t0.kind].color });
+    txt('!', W / 2 + ctx.measureText(label).width / 2 + fs * 0.1, y + fs * 0.8, fs, { color: KIND[t0.next || t0.kind].color });
   }
 }
 
