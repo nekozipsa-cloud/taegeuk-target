@@ -32,7 +32,6 @@
   .card .chip { font-size: clamp(10px, 1.15vw, 18px); font-weight: 700; letter-spacing: 1px; padding: 0.35vw 1vw; border-radius: 999px; margin-top: 0.6vw; background: rgba(90,98,130,0.08); color: #9aa1bf; }
   .card.on { cursor: pointer; background: linear-gradient(135deg, var(--pink), var(--orange)); color: #fff; box-shadow: 0 1.8vw 4vw rgba(255,122,162,0.45); }
   .card.on .chip { background: rgba(255,255,255,0.28); color: #fff; }
-  .card.on.sel::after { content: ""; position: absolute; inset: -0.55vw; border-radius: calc(clamp(14px, 2.2vw, 36px) + 0.55vw); border: 0.3vw solid #fff; box-shadow: 0 0 0 0.12vw rgba(255,122,162,0.55); pointer-events: none; }   /* 선택된 품세(리모컨 ▶ 으로 시작될 카드): 움직이지 않는 테두리 */
   .card.on:focus-visible { outline: 0.4vw solid var(--ink); outline-offset: 0.4vw; }
   .card.on.wait { filter: saturate(0.45); }
   .sub { position: absolute; left: 0; right: 0; bottom: 11vh; text-align: center; font-size: clamp(14px, 1.7vw, 24px); font-weight: 800; color: var(--ink2); }
@@ -49,13 +48,13 @@
   <button id="bPlay">▶ 시작</button>
   <button id="bVoice">구령 켜짐</button>
 </div>
-<div id="hint">리모컨 ▶ 또는 Space: 시작 · ◀ 또는 ←→: 품세 고르기 · V: 구령</div>
+<div id="hint">리모컨 ▶ 또는 Space: 시작 · 숫자 1·2: 품세 바로 시작 · V: 구령</div>
 <div id="toast"></div>
 
 <div id="start" class="screen">
   <h1 class="brand"><img src="assets/logo-playcon.png" alt="PLAYCON"><span>태권도 품세 연습</span></h1>
   <div class="cards">
-    <button class="card on sel" type="button" data-course="0"><span>태극 1장</span><span class="chip">누르면 시작</span></button>
+    <button class="card on" type="button" data-course="0"><span>태극 1장</span><span class="chip">누르면 시작</span></button>
     <button class="card on" type="button" data-course="1"><span>태극 2장</span><span class="chip">누르면 시작</span></button>
     <div class="card" aria-disabled="true"><span>태극 3장</span><span class="chip">준비 중</span></div>
     <div class="card" aria-disabled="true"><span>태극 4장</span><span class="chip">준비 중</span></div>
@@ -299,8 +298,7 @@ window.addEventListener('keydown', (e) => {
   const k = e.key;
   if (k === ' ' || k === 'Enter' || k === 'PageDown') { e.preventDefault(); pressPlay(); }
   else if (k === 'Escape' || k === 'b' || k === 'B') { if (G.state === 'play') pressPlay(); }
-  else if (k === 'ArrowRight' || k === 'PageUp') { e.preventDefault(); selectCourse((G.course + 1) % COURSES.length); }
-  else if (k === 'ArrowLeft') { e.preventDefault(); selectCourse((G.course - 1 + COURSES.length) % COURSES.length); }
+  else if (/^[1-9]$/.test(k) && COURSES[+k - 1]) { e.preventDefault(); pickCard(+k - 1); }   // 숫자 키: 그 품세를 바로 시작
   else if (k === 'v' || k === 'V') toggleVoice();
 });
 document.getElementById('bPlay').onclick = pressPlay;
@@ -309,7 +307,6 @@ document.getElementById('bCam').onclick = startCamera;
 const startEl = document.getElementById('start');
 const cards = [...document.querySelectorAll('.card.on')];   // 활성 품세 카드 (data-course = COURSES 번호)
 /* 품세 카드: 누르면 카메라를 켜고, 사람이 보이는 순간 바로 시작한다 */
-function selectCourse(i) { if (G.state === 'attract' && !G.camLoading && COURSES[i]) { G.course = i; G.armed = false; } }
 function pickCard(i = G.course) {
   if (G.state !== 'attract') return;
   G.course = i; G.armed = true; G.camError = null;
@@ -328,7 +325,6 @@ function syncScreens() {
   const n = G.players.length;
   for (const el of cards) {
     const mine = +el.dataset.course === G.course;
-    el.classList.toggle('sel', mine);
     el.classList.toggle('wait', mine && G.camLoading);
     el.querySelector('.chip').textContent = !mine ? '누르면 시작' : G.camLoading ? '카메라 준비 중…' : (cam && G.armed ? '곧 시작' : '누르면 시작');
   }
