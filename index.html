@@ -30,15 +30,16 @@
   .cards { position: absolute; left: 5vw; right: 5vw; top: 26vh; bottom: 20vh; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; gap: 3vh 3vw; }
   .card { position: relative; border-radius: clamp(14px, 2.2vw, 36px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6vw; padding: 0; border: 0.15vw solid rgba(255,255,255,0.9); background: rgba(255,255,255,0.55); color: #b4b9cf; box-shadow: 0 1vw 2.6vw rgba(60,80,120,0.08); font-family: "Noto Sans KR", sans-serif; font-weight: 800; font-size: clamp(18px, 2.6vw, 44px); text-align: center; cursor: default; }
   .card .chip { font-size: clamp(10px, 1.15vw, 18px); font-weight: 700; letter-spacing: 1px; padding: 0.35vw 1vw; border-radius: 999px; margin-top: 0.6vw; background: rgba(90,98,130,0.08); color: #9aa1bf; }
-  .card.on { cursor: pointer; background: linear-gradient(135deg, var(--pink), var(--orange)); color: #fff; box-shadow: 0 1.8vw 4vw rgba(255,122,162,0.45); animation: beat 1.6s ease-in-out infinite; }
+  .card.on { cursor: pointer; background: linear-gradient(135deg, var(--pink), var(--orange)); color: #fff; box-shadow: 0 1.8vw 4vw rgba(255,122,162,0.45); }
+  .card.on.sel { animation: beat 1.6s ease-in-out infinite; }   /* 펄스 = 리모컨 ▶ 을 누르면 시작될 품세 */
   .card.on .chip { background: rgba(255,255,255,0.28); color: #fff; }
-  .card.on::after { content: ""; position: absolute; inset: -0.3vw; border-radius: inherit; border: 0.35vw solid rgba(255,122,162,0.7); pointer-events: none; animation: ring 1.6s ease-out infinite; }
+  .card.on.sel::after { content: ""; position: absolute; inset: -0.3vw; border-radius: inherit; border: 0.35vw solid rgba(255,122,162,0.7); pointer-events: none; animation: ring 1.6s ease-out infinite; }
   .card.on:focus-visible { outline: 0.4vw solid var(--ink); outline-offset: 0.4vw; }
   .card.on.wait { animation: none; filter: saturate(0.45); }
   .card.on.wait::after { animation: none; opacity: 0; }
   @keyframes beat { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.035); } }
   @keyframes ring { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.18); opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) { .card.on, .card.on::after { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .card.on.sel, .card.on.sel::after { animation: none; } }
   .sub { position: absolute; left: 0; right: 0; bottom: 11vh; text-align: center; font-size: clamp(14px, 1.7vw, 24px); font-weight: 800; color: var(--ink2); }
   .err { position: absolute; left: 10vw; right: 10vw; bottom: 5vh; text-align: center; font-size: clamp(12px, 1.3vw, 16px); font-weight: 700; color: #e0506e; }
   .foot { position: absolute; left: 0; right: 0; bottom: 5vh; text-align: center; font-size: clamp(11px, 1.1vw, 15px); font-weight: 700; color: var(--ink3); }
@@ -55,14 +56,14 @@
   <button id="bPlay">▶ 시작</button>
   <button id="bVoice">구령 켜짐</button>
 </div>
-<div id="hint">리모컨 ▶ 또는 Space: 시작 · V: 구령</div>
+<div id="hint">리모컨 ▶ 또는 Space: 시작 · ◀ 또는 ←→: 품세 고르기 · V: 구령</div>
 <div id="toast"></div>
 
 <div id="start" class="screen">
   <h1 class="brand"><img src="assets/logo-playcon.png" alt="PLAYCON"><span>태권도 품세 연습</span></h1>
   <div class="cards">
-    <button id="card1" class="card on" type="button"><span>태극 1장</span><span id="card1Chip" class="chip">누르면 시작</span></button>
-    <div class="card" aria-disabled="true"><span>태극 2장</span><span class="chip">준비 중</span></div>
+    <button class="card on sel" type="button" data-course="0"><span>태극 1장</span><span class="chip">누르면 시작</span></button>
+    <button class="card on" type="button" data-course="1"><span>태극 2장</span><span class="chip">누르면 시작</span></button>
     <div class="card" aria-disabled="true"><span>태극 3장</span><span class="chip">준비 중</span></div>
     <div class="card" aria-disabled="true"><span>태극 4장</span><span class="chip">준비 중</span></div>
     <div class="card" aria-disabled="true"><span>태극 5장</span><span class="chip">준비 중</span></div>
@@ -70,7 +71,7 @@
     <div class="card" aria-disabled="true"><span>태극 7장</span><span class="chip">준비 중</span></div>
     <div class="card" aria-disabled="true"><span>태극 8장</span><span class="chip">준비 중</span></div>
   </div>
-  <div id="startSub" class="sub">태극 1장을 누르면 카메라가 켜지고 바로 시작합니다 · 4명까지</div>
+  <div id="startSub" class="sub">품세를 누르면 카메라가 켜지고 바로 시작합니다 · 4명까지</div>
   <div id="startErr" class="err"></div>
   <div class="foot">카메라 한 대 · 빔프로젝터 · 리모컨 버튼 하나</div>
 </div>
@@ -107,15 +108,21 @@ const KIND = {
   mid:  { label: '몸통', voice: '몸통지르기', color: '#ffb347', dark: '#5a3200', part: 'wrist' },
   high: { label: '얼굴', voice: '얼굴막기',   color: '#ff7aa2', dark: '#5c1030', part: 'wrist' },
   kick: { label: '차기', voice: '앞차기',     color: '#6fb1ff', dark: '#0d2f66', part: 'ankle' },
+  face: { label: '지르기', voice: '얼굴지르기', color: '#b79bff', dark: '#2e1a66', part: 'wrist' },   // 태극 2장의 새 기술 (목표: 인중)
 };
 const INK = '#22263a', INK2 = '#5b627f', INK3 = '#9aa1bf', PINK = '#ff7aa2', ORANGE = '#ff9a62';
 const FONT_NUM = '"Nunito", "Noto Sans KR", sans-serif';
 const FONT_KO = '"Noto Sans KR", "Nunito", sans-serif';
 
-/* ── 한 가지 방식: 태극 1장의 네 동작을 섞어서 60초 ───────── */
+/* ── 품세별 코스: 그 장의 핵심 동작을 섞어서 60초 ─────────
+   chain: 앞차기 타깃 바로 뒤에 지르기 타깃을 이어 띄운다 (태극 2장의 핵심 '앞차고 지르기')
+   highLift: 얼굴막기 타깃을 머리 위로 더 올려 얼굴지르기 타깃과 겹치지 않게 한다 */
 const COURSES = [
   { id: 'tg1', name: '태극 1장', sub: '아래막기 · 몸통지르기 · 얼굴막기 · 앞차기', seconds: 60,
     next: (prev) => pick(['low', 'mid', 'high', 'kick'].filter(k => k !== prev)) },
+  { id: 'tg2', name: '태극 2장', sub: '얼굴지르기 · 앞차고 지르기', seconds: 60, highLift: 0.6,
+    chain: () => pick(['face', 'face', 'mid']),
+    next: (prev) => pick(['low', 'high', 'face', 'kick', 'kick'].filter(k => k !== prev)) },
 ];
 const DIR_TEXT = { '←': '왼쪽으로', '→': '오른쪽으로', '↑': '앞으로', '↓': '뒤로 돌아' };
 function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
@@ -164,10 +171,11 @@ const G = {
   camError: null,
   camLoading: false,
   armed: false,               // 카드를 눌러 두었으면 사람이 보이는 순간 시작
+  chainNext: null,            // 앞차기 뒤에 바로 이어질 지르기 종류
 };
 const LANE_COLORS = ['#ff7aa2', '#6fb1ff', '#2fd38a', '#ffb347'];
 window.__G = G;   // 점검용
-window.__api = { pressPlay: () => pressPlay() };
+window.__api = { pressPlay: () => pressPlay(), targetPos: (a, k, sd) => targetPos(a, k, sd) };
 
 /* ── 몸 기준점 (카메라 랜드마크에서 계산) ────────────────
    { cx, sw, headY, chestY, hipY, kneeY, wrists:[{x,y}], ankles:[{x,y}] } */
@@ -177,7 +185,8 @@ function targetPos(a, kind, side) {
   switch (kind) {
     case 'low':  return { x: a.cx + s * a.sw * 0.95, y: a.hipY + (a.kneeY - a.hipY) * 0.35, r: a.sw * 0.5 };   // 허벅지 중간 옆
     case 'mid':  return { x: a.cx, y: a.chestY, r: a.sw * 0.5 };                                                 // 가슴 정중앙
-    case 'high': return { x: a.cx + s * a.sw * 0.15, y: a.headY - a.sw * 0.25, r: a.sw * 0.5 };
+    case 'high': return { x: a.cx + s * a.sw * 0.15, y: a.headY - a.sw * (COURSES[G.course].highLift || 0.25), r: a.sw * (COURSES[G.course].highLift ? 0.45 : 0.5) };
+    case 'face': return { x: a.cx, y: a.headY + a.sw * 0.08, r: a.sw * 0.4 };                                  // 인중 높이, 몸 정중앙
     case 'kick': return { x: a.cx + s * a.sw * 0.3, y: a.kneeY - a.sw * 0.15, r: a.sw * 0.6 };   // 차는 다리 쪽, 무릎 높이
   }
 }
@@ -185,20 +194,27 @@ function targetPos(a, kind, side) {
 /* ── 타깃 만들기·판정: 모두 같은 동작을 같은 순간에 ──────
    타깃은 한 번에 하나(G.cur)만 뜨고, 참가자 전원이 같은 종류·같은 쪽을 받는다.
    판정과 점수만 사람별로 따로 한다. */
-function spawnShared(kind, dir) {
-  G.side = G.side === 'L' ? 'R' : 'L';
-  G.cur = { kind, side: G.side, dir, born: G.now, window: G.window, done: false };
-  for (const p of G.players) { p.target = { kind, side: G.side, dir, born: G.now, hit: 0 }; p.shown++; }
+function spawnShared(kind, dir, chain = false) {
+  if (!chain) G.side = G.side === 'L' ? 'R' : 'L';      // 이어 지르기는 찬 쪽 그대로
+  G.cur = { kind, side: G.side, dir, born: G.now, window: G.window, done: false, chain };
+  for (const p of G.players) {
+    if (!chain) p.kickHit = false;
+    p.target = { kind, side: G.side, dir, born: G.now, window: G.window, hit: 0, chain }; p.shown++;
+  }
   sfx.spawn(); say(KIND[kind].voice);
 }
 function joinCurrent(p) {   // 라운드 중간에 들어온 사람도 지금 타깃을 같이 받는다
   const c = G.cur; if (!c || c.done) return;
-  p.target = { kind: c.kind, side: c.side, dir: c.dir, born: c.born, hit: 0 }; p.shown++;
+  p.target = { kind: c.kind, side: c.side, dir: c.dir, born: c.born, window: c.window, hit: 0, chain: c.chain }; p.shown++;
 }
 
 function updateTargets() {
   const c = COURSES[G.course];
   if (!G.cur) {
+    if (G.chainNext) {                       // 앞차기 직후: 쉬지 않고 바로 지르기
+      if (G.now - G.lastEnd > 180) { const k = G.chainNext; G.chainNext = null; spawnShared(k, null, true); G.lastKind = k; }
+      return;
+    }
     if (G.now - G.lastEnd > 650) {
       if (c.seq) {
         if (G.seqIndex >= c.seq.length) return;
@@ -219,7 +235,10 @@ function updateTargets() {
     for (const p of G.players) if (!p.target || !p.target.hit) p.streak = 0;
   }
   if (cur.done) {
-    if (G.now - cur.doneAt > 450) { G.cur = null; G.lastEnd = G.now; for (const p of G.players) p.target = null; if (c.seq) G.seqIndex++; }
+    if (G.now - cur.doneAt > (cur.kind === 'kick' && c.chain ? 250 : 450)) {
+      if (c.chain && cur.kind === 'kick' && !cur.chain && G.state === 'play') G.chainNext = c.chain();
+      G.cur = null; G.lastEnd = G.now; for (const p of G.players) p.target = null; if (c.seq) G.seqIndex++;
+    }
     return;
   }
   if (age < 350) return;            // 나타나는 중에는 판정 안 함
@@ -234,7 +253,10 @@ function updateTargets() {
       // 앞차기: 발(발목·발끝)이 무릎 높이까지 올라오면 성공. 정면 카메라에선 발이 카메라 쪽으로 나가 좌우 위치가 애매하므로 높이 위주로 본다
       const kicked = kind.part === 'ankle' && pt.y <= pos.y + pos.r * 0.5 && Math.abs(pt.x - a.cx) < a.sw * 1.3;
       if (kicked || Math.hypot(pt.x - pos.x, pt.y - pos.y) < pos.r) {
-        t.hit = G.now; p.hits++; t.gain = 10 + Math.min(p.streak, 5) * 2; p.score += t.gain; p.streak++;
+        t.hit = G.now; p.hits++; t.gain = 10 + Math.min(p.streak, 5) * 2;
+        if (t.kind === 'kick') p.kickHit = true;
+        if (t.chain && p.kickHit) { t.gain += 10; t.combo = true; p.kickHit = false; }   // 차고 지르기 둘 다 성공
+        p.score += t.gain; p.streak++;
         burst(pos.x, pos.y, kind.color); sfx.hit();
         break;
       }
@@ -257,7 +279,7 @@ function startRound() {
   G.armed = false;
   const c = COURSES[G.course];
   for (const p of G.players) Object.assign(p, { score: 0, hits: 0, shown: 0, streak: 0, target: null });
-  G.seqIndex = 0; G.cur = null; G.window = 2400; G.lastEnd = G.now + 900; G.lastKind = null;
+  G.seqIndex = 0; G.cur = null; G.chainNext = null; G.window = 2400; G.lastEnd = G.now + 900; G.lastKind = null;
   G.state = 'play'; G.tStart = G.now;
   G.tEnd = c.seconds ? G.now + c.seconds * 1000 : 0;
   sfx.start(); say(c.name + ' 시작');
@@ -272,7 +294,7 @@ function endRound() {
 function stars(p) { if (!p.shown) return 0; const r = p.hits / p.shown; return r >= 0.8 ? 3 : r >= 0.5 ? 2 : 1; }
 function changeCourse() { /* 코스는 하나뿐 */ }
 function pressPlay() {
-  if (G.state === 'play') { G.state = 'attract'; G.armed = false; G.cur = null; for (const p of G.players) p.target = null; say('정지'); return; }
+  if (G.state === 'play') { G.state = 'attract'; G.armed = false; G.cur = null; G.chainNext = null; for (const p of G.players) p.target = null; say('정지'); return; }
   if (G.state === 'attract') pickCard();
 }
 
@@ -281,35 +303,42 @@ window.addEventListener('keydown', (e) => {
   const k = e.key;
   if (k === ' ' || k === 'Enter' || k === 'PageDown') { e.preventDefault(); pressPlay(); }
   else if (k === 'Escape' || k === 'b' || k === 'B') { if (G.state === 'play') pressPlay(); }
+  else if (k === 'ArrowRight' || k === 'PageUp') { e.preventDefault(); selectCourse((G.course + 1) % COURSES.length); }
+  else if (k === 'ArrowLeft') { e.preventDefault(); selectCourse((G.course - 1 + COURSES.length) % COURSES.length); }
   else if (k === 'v' || k === 'V') toggleVoice();
 });
 document.getElementById('bPlay').onclick = pressPlay;
 document.getElementById('bVoice').onclick = toggleVoice;
 document.getElementById('bCam').onclick = startCamera;
 const startEl = document.getElementById('start');
-const card1 = document.getElementById('card1');
-/* 태극 1장 카드: 누르면 카메라를 켜고, 사람이 보이는 순간 바로 시작한다 */
-function pickCard() {
+const cards = [...document.querySelectorAll('.card.on')];   // 활성 품세 카드 (data-course = COURSES 번호)
+/* 품세 카드: 누르면 카메라를 켜고, 사람이 보이는 순간 바로 시작한다 */
+function selectCourse(i) { if (G.state === 'attract' && !G.camLoading && COURSES[i]) { G.course = i; G.armed = false; } }
+function pickCard(i = G.course) {
   if (G.state !== 'attract') return;
-  G.armed = true; G.camError = null;
+  G.course = i; G.armed = true; G.camError = null;
   if (G.mode === 'none') startCamera();
   else if (G.players.length) startRound();
   else toast('카메라 앞 칸에 서면 바로 시작됩니다');
 }
-card1.onclick = pickCard;
+for (const el of cards) el.onclick = () => pickCard(+el.dataset.course);
 function syncScreens() {
   const show = G.state === 'attract';
   startEl.classList.toggle('on', show);
   if (!show) return;
   const cam = G.mode === 'camera';
   startEl.classList.toggle('cam', cam);
-  card1.classList.toggle('wait', G.camLoading);
   document.getElementById('startErr').textContent = G.camError || '';
   const n = G.players.length;
-  document.getElementById('card1Chip').textContent = G.camLoading ? '카메라 준비 중…' : (cam ? (G.armed ? '곧 시작' : '누르면 시작') : '누르면 시작');
+  for (const el of cards) {
+    const mine = +el.dataset.course === G.course;
+    el.classList.toggle('sel', mine);
+    el.classList.toggle('wait', mine && G.camLoading);
+    el.querySelector('.chip').textContent = !mine ? '누르면 시작' : G.camLoading ? '카메라 준비 중…' : (cam && G.armed ? '곧 시작' : '누르면 시작');
+  }
   document.getElementById('startSub').textContent = !cam
-    ? (G.camLoading ? '카메라를 켜는 중입니다' : '태극 1장을 누르면 카메라가 켜지고 바로 시작합니다 · 4명까지')
-    : (n ? (G.armed ? `${n}명 준비됨 · 시작합니다` : `${n}명 준비됨 · 태극 1장을 누르세요`) : '카메라 앞 칸에 서세요 (전신이 보이게)');
+    ? (G.camLoading ? '카메라를 켜는 중입니다' : '품세를 누르면 카메라가 켜지고 바로 시작합니다 · 4명까지')
+    : (n ? (G.armed ? `${n}명 준비됨 · 시작합니다` : `${n}명 준비됨 · 품세를 누르세요`) : '카메라 앞 칸에 서세요 (전신이 보이게)');
 }
 
 canvas.addEventListener('pointerdown', () => { if (G.state === 'result') { G.state = 'attract'; } });
@@ -476,7 +505,8 @@ function drawTarget(p) {
     ctx.save(); ctx.translate(px, py); ctx.rotate(-0.1); ctx.globalAlpha = 1 - Math.max(0, k - 0.6) * 2.5;
     ctx.font = `900 ${fs}px ${FONT_NUM}`; const tw = ctx.measureText('+' + t.gain).width;
     glassBox(-tw / 2 - fs * 0.5, -fs * 0.75, tw + fs, fs * 1.5, fs * 0.75, 0.95);
-    txt('+' + t.gain, 0, fs * 0.05, fs, { font: FONT_NUM, color: ORANGE });
+    txt('+' + t.gain, 0, fs * 0.05, fs, { font: FONT_NUM, color: t.combo ? PINK : ORANGE });
+    if (t.combo) txt('차고 지르기!', 0, -fs * 1.25, Math.round(fs * 0.6), { color: PINK });
     ctx.restore(); ctx.globalAlpha = 1;
     return;
   }
@@ -554,7 +584,7 @@ function drawHUD() {
   const t0 = (G.cur && !G.cur.done) ? G.cur : null;
   if (t0) {
     const fs = Math.round(u * 0.06); ctx.font = `900 ${fs}px ${FONT_KO}`;
-    const label = KIND[t0.kind].voice, tw = ctx.measureText(label + ' !').width + fs * 1.6;
+    const label = (t0.chain ? '차고 ▸ ' : '') + KIND[t0.kind].voice, tw = ctx.measureText(label + ' !').width + fs * 1.6;
     const x = W / 2 - tw / 2, y = H - u * 0.055 - fs;
     glassBox(x, y, tw, fs * 1.55, fs * 0.78, 0.86);
     txt(label, W / 2 - fs * 0.3, y + fs * 0.8, fs, { color: INK });
