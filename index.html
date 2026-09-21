@@ -31,15 +31,10 @@
   .card { position: relative; border-radius: clamp(14px, 2.2vw, 36px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6vw; padding: 0; border: 0.15vw solid rgba(255,255,255,0.9); background: rgba(255,255,255,0.55); color: #b4b9cf; box-shadow: 0 1vw 2.6vw rgba(60,80,120,0.08); font-family: "Noto Sans KR", sans-serif; font-weight: 800; font-size: clamp(18px, 2.6vw, 44px); text-align: center; cursor: default; }
   .card .chip { font-size: clamp(10px, 1.15vw, 18px); font-weight: 700; letter-spacing: 1px; padding: 0.35vw 1vw; border-radius: 999px; margin-top: 0.6vw; background: rgba(90,98,130,0.08); color: #9aa1bf; }
   .card.on { cursor: pointer; background: linear-gradient(135deg, var(--pink), var(--orange)); color: #fff; box-shadow: 0 1.8vw 4vw rgba(255,122,162,0.45); }
-  .card.on.sel { animation: beat 1.6s ease-in-out infinite; }   /* 펄스 = 리모컨 ▶ 을 누르면 시작될 품세 */
   .card.on .chip { background: rgba(255,255,255,0.28); color: #fff; }
-  .card.on.sel::after { content: ""; position: absolute; inset: -0.3vw; border-radius: inherit; border: 0.35vw solid rgba(255,122,162,0.7); pointer-events: none; animation: ring 1.6s ease-out infinite; }
+  .card.on.sel::after { content: ""; position: absolute; inset: -0.55vw; border-radius: calc(clamp(14px, 2.2vw, 36px) + 0.55vw); border: 0.3vw solid #fff; box-shadow: 0 0 0 0.12vw rgba(255,122,162,0.55); pointer-events: none; }   /* 선택된 품세(리모컨 ▶ 으로 시작될 카드): 움직이지 않는 테두리 */
   .card.on:focus-visible { outline: 0.4vw solid var(--ink); outline-offset: 0.4vw; }
-  .card.on.wait { animation: none; filter: saturate(0.45); }
-  .card.on.wait::after { animation: none; opacity: 0; }
-  @keyframes beat { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.035); } }
-  @keyframes ring { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.18); opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) { .card.on.sel, .card.on.sel::after { animation: none; } }
+  .card.on.wait { filter: saturate(0.45); }
   .sub { position: absolute; left: 0; right: 0; bottom: 11vh; text-align: center; font-size: clamp(14px, 1.7vw, 24px); font-weight: 800; color: var(--ink2); }
   .err { position: absolute; left: 10vw; right: 10vw; bottom: 5vh; text-align: center; font-size: clamp(12px, 1.3vw, 16px); font-weight: 700; color: #e0506e; }
 </style>
