@@ -42,8 +42,6 @@
   @media (prefers-reduced-motion: reduce) { .card.on.sel, .card.on.sel::after { animation: none; } }
   .sub { position: absolute; left: 0; right: 0; bottom: 11vh; text-align: center; font-size: clamp(14px, 1.7vw, 24px); font-weight: 800; color: var(--ink2); }
   .err { position: absolute; left: 10vw; right: 10vw; bottom: 5vh; text-align: center; font-size: clamp(12px, 1.3vw, 16px); font-weight: 700; color: #e0506e; }
-  .foot { position: absolute; left: 0; right: 0; bottom: 5vh; text-align: center; font-size: clamp(11px, 1.1vw, 15px); font-weight: 700; color: var(--ink3); }
-  .err:not(:empty) ~ .foot { display: none; }
 </style>
 </head>
 <body>
@@ -73,7 +71,6 @@
   </div>
   <div id="startSub" class="sub">품세를 누르면 카메라가 켜지고 바로 시작합니다 · 4명까지</div>
   <div id="startErr" class="err"></div>
-  <div class="foot">카메라 한 대 · 빔프로젝터 · 리모컨 버튼 하나</div>
 </div>
 </div>
 
