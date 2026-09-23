@@ -48,7 +48,7 @@
   <button id="bPlay">▶ 시작</button>
   <button id="bVoice">구령 켜짐</button>
 </div>
-<div id="hint">리모컨 ▶ 또는 Space: 시작 · 숫자 1·2·3: 품세 바로 시작 · V: 구령</div>
+<div id="hint">리모컨 ▶ 또는 Space: 시작 · 숫자 1~8: 품세 바로 시작 · V: 구령</div>
 <div id="toast"></div>
 
 <div id="start" class="screen">
@@ -57,11 +57,11 @@
     <button class="card on" type="button" data-course="0"><span>태극 1장</span><span class="chip">누르면 시작</span></button>
     <button class="card on" type="button" data-course="1"><span>태극 2장</span><span class="chip">누르면 시작</span></button>
     <button class="card on" type="button" data-course="2"><span>태극 3장</span><span class="chip">누르면 시작</span></button>
-    <div class="card" aria-disabled="true"><span>태극 4장</span><span class="chip">준비 중</span></div>
-    <div class="card" aria-disabled="true"><span>태극 5장</span><span class="chip">준비 중</span></div>
-    <div class="card" aria-disabled="true"><span>태극 6장</span><span class="chip">준비 중</span></div>
-    <div class="card" aria-disabled="true"><span>태극 7장</span><span class="chip">준비 중</span></div>
-    <div class="card" aria-disabled="true"><span>태극 8장</span><span class="chip">준비 중</span></div>
+    <button class="card on" type="button" data-course="3"><span>태극 4장</span><span class="chip">누르면 시작</span></button>
+    <button class="card on" type="button" data-course="4"><span>태극 5장</span><span class="chip">누르면 시작</span></button>
+    <button class="card on" type="button" data-course="5"><span>태극 6장</span><span class="chip">누르면 시작</span></button>
+    <button class="card on" type="button" data-course="6"><span>태극 7장</span><span class="chip">누르면 시작</span></button>
+    <button class="card on" type="button" data-course="7"><span>태극 8장</span><span class="chip">누르면 시작</span></button>
   </div>
   <div id="startSub" class="sub">품세를 누르면 카메라가 켜지고 바로 시작합니다 · 4명까지</div>
   <div id="startErr" class="err"></div>
@@ -94,15 +94,66 @@ function toast(msg, ms = 2500) {
 }
 
 /* ── 타깃 종류: 높이 4가지 ──────────────────────────────── */
+/* ── 타깃 종류(기술) 표 ──────────────────────────────────
+   part: 판정에 쓰는 몸 부위 wrist(손목) | ankle(발목·발끝) | elbow(팔꿈치) | knee(무릎)
+   spot(a, s): 타깃 위치 {x, y, r}. two(a, s): 양손 기술 — 두 자리를 각각 다른 손이 채워야 성공
+   kick: 'front'(무릎 높이 이상, 몸 앞) | 'side'(높이 이상, 몸 옆으로) | 'jump'(front + 반대 발도 바닥에서 떨어짐)
+   fromOutside: 손이 어깨 폭 바깥을 거쳐 옆으로 들어와야 인정(안치기·안막기류)   fromAbove: 손이 머리 높이를 거쳐 내려와야 인정(내려치기)
+   s = 왼쪽(-1)/오른쪽(+1). 화면 좌표라 숫자는 어깨 폭(sw) 배수. */
+const HL = () => (COURSES[G.course].highLift || 0.25);
 const KIND = {
-  low:  { label: '아래', voice: '아래막기',   color: '#2fd38a', dark: '#0b3d25', part: 'wrist' },
-  mid:  { label: '몸통', voice: '몸통지르기', color: '#ffb347', dark: '#5a3200', part: 'wrist' },
-  high: { label: '얼굴', voice: '얼굴막기',   color: '#ff7aa2', dark: '#5c1030', part: 'wrist' },
-  kick: { label: '차기', voice: '앞차기',     color: '#6fb1ff', dark: '#0d2f66', part: 'ankle' },
-  face: { label: '지르기', voice: '얼굴지르기', color: '#b79bff', dark: '#2e1a66', part: 'wrist' },   // 태극 2장의 새 기술 (목표: 인중)
-  kblock: { label: '손날막기', voice: '손날바깥막기', color: '#3fd0c9', dark: '#0b4442', part: 'wrist' },   // 태극 3장: 어깨 높이, 몸 바깥쪽
-  kin:    { label: '손날치기', voice: '손날안치기',   color: '#ff8fd0', dark: '#5a1a45', part: 'wrist', fromOutside: true },   // 태극 3장: 목 높이 정중앙, 바깥에서 안으로 들어와야 인정
+  // 태극 1장
+  low:   { label: '아래',   voice: '아래막기',   color: '#2fd38a', dark: '#0b3d25', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.95, y: a.hipY + (a.kneeY - a.hipY) * 0.35, r: a.sw * 0.5 }) },
+  mid:   { label: '몸통',   voice: '몸통지르기', color: '#ffb347', dark: '#5a3200', part: 'wrist', spot: (a, s) => ({ x: a.cx, y: a.chestY, r: a.sw * 0.5 }) },
+  high:  { label: '얼굴',   voice: '얼굴막기',   color: '#ff7aa2', dark: '#5c1030', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.15, y: a.headY - a.sw * HL(), r: a.sw * (HL() > 0.3 ? 0.45 : 0.5) }) },
+  kick:  { label: '차기',   voice: '앞차기',     color: '#6fb1ff', dark: '#0d2f66', part: 'ankle', kick: 'front', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.3, y: a.kneeY - a.sw * 0.15, r: a.sw * 0.6 }) },
+  inblock: { label: '안막기', voice: '몸통안막기', color: '#5fd6a5', dark: '#0c4a33', part: 'wrist', fromOutside: true, spot: (a, s) => ({ x: a.cx + s * a.sw * 0.15, y: a.chestY, r: a.sw * 0.45 }) },
+  // 태극 2장
+  face:  { label: '지르기', voice: '얼굴지르기', color: '#b79bff', dark: '#2e1a66', part: 'wrist', spot: (a, s) => ({ x: a.cx, y: a.headY + a.sw * 0.08, r: a.sw * 0.4 }) },
+  // 태극 3장
+  kblock: { label: '손날막기', voice: '손날바깥막기', color: '#3fd0c9', dark: '#0b4442', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.95, y: a.shoulderY, r: a.sw * 0.45 }) },
+  kin:    { label: '손날치기', voice: '손날안치기',   color: '#ff8fd0', dark: '#5a1a45', part: 'wrist', fromOutside: true, spot: (a, s) => ({ x: a.cx, y: a.shoulderY - a.sw * 0.28, r: a.sw * 0.38 }) },
+  // 태극 4장
+  augkblock: { label: '거들어막기', voice: '손날거들어바깥막기', color: '#3fd0c9', dark: '#0b4442', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.9, y: a.chestY, r: a.sw * 0.45 }) },
+  spear:   { label: '찌르기',   voice: '세워찌르기',   color: '#ffc46b', dark: '#5a3200', part: 'wrist', spot: (a, s) => ({ x: a.cx, y: a.chestY - a.sw * 0.15, r: a.sw * 0.42 }) },
+  swallow: { label: '제비품',   voice: '제비품안치기', color: '#ff8fd0', dark: '#5a1a45', part: 'wrist', fromOutside: true, spot: (a, s) => ({ x: a.cx, y: a.shoulderY - a.sw * 0.28, r: a.sw * 0.38 }) },
+  sidekick: { label: '옆차기',  voice: '옆차기',       color: '#6fb1ff', dark: '#0d2f66', part: 'ankle', kick: 'side', spot: (a, s) => ({ x: a.cx + s * a.sw * 1.1, y: a.hipY, r: a.sw * 0.6 }) },
+  outblock: { label: '바깥막기', voice: '몸통바깥막기', color: '#5fd6a5', dark: '#0c4a33', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.9, y: a.chestY + a.sw * 0.1, r: a.sw * 0.45 }) },
+  backfist: { label: '등주먹',  voice: '등주먹앞치기', color: '#b79bff', dark: '#2e1a66', part: 'wrist', spot: (a, s) => ({ x: a.cx, y: a.headY + a.sw * 0.1, r: a.sw * 0.4 }) },
+  // 태극 5장
+  hammer:   { label: '메주먹',  voice: '메주먹내려치기', color: '#ff9a62', dark: '#5a2a00', part: 'wrist', fromAbove: true, spot: (a, s) => ({ x: a.cx + s * a.sw * 0.25, y: a.chestY, r: a.sw * 0.45 }) },
+  elbowTurn: { label: '팔꿈치', voice: '팔꿈치돌려치기', color: '#ff7a7a', dark: '#5a1010', part: 'elbow', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.15, y: a.headY + a.sw * 0.4, r: a.sw * 0.45 }) },
+  elbowTarget: { label: '표적치기', voice: '팔꿈치표적치기', color: '#ff7a7a', dark: '#5a1010', part: 'elbow', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.2, y: a.chestY, r: a.sw * 0.45 }) },
+  // 태극 6장
+  twistblock: { label: '비틀어막기', voice: '손날비틀어바깥막기', color: '#3fd0c9', dark: '#0b4442', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.9, y: a.headY + a.sw * 0.15, r: a.sw * 0.42 }) },
+  faceout:  { label: '얼굴바깥', voice: '얼굴바깥막기', color: '#ff7aa2', dark: '#5c1030', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.9, y: a.headY + a.sw * 0.15, r: a.sw * 0.42 }) },
+  spreadLow: { label: '헤쳐막기', voice: '아래헤쳐막기', color: '#9fd65f', dark: '#2f4a0c', part: 'wrist', two: (a, s) => [{ x: a.cx - a.sw * 0.9, y: a.hipY + a.sw * 0.25, r: a.sw * 0.42 }, { x: a.cx + a.sw * 0.9, y: a.hipY + a.sw * 0.25, r: a.sw * 0.42 }] },
+  palm:     { label: '바탕손',  voice: '바탕손안막기', color: '#5fd6a5', dark: '#0c4a33', part: 'wrist', fromOutside: true, spot: (a, s) => ({ x: a.cx + s * a.sw * 0.15, y: a.chestY, r: a.sw * 0.42 }) },
+  roundkick: { label: '돌려차기', voice: '돌려차기',   color: '#6fb1ff', dark: '#0d2f66', part: 'ankle', kick: 'side', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.8, y: a.shoulderY + a.sw * 0.1, r: a.sw * 0.6 }) },
+  // 태극 7장
+  augLow:   { label: '손날아래', voice: '손날거들어아래막기', color: '#2fd38a', dark: '#0b3d25', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.95, y: a.hipY + (a.kneeY - a.hipY) * 0.35, r: a.sw * 0.5 }) },
+  augPalm:  { label: '바탕손',  voice: '바탕손거들어안막기', color: '#5fd6a5', dark: '#0c4a33', part: 'wrist', fromOutside: true, spot: (a, s) => ({ x: a.cx + s * a.sw * 0.15, y: a.chestY, r: a.sw * 0.42 }) },
+  augBackfist: { label: '등주먹', voice: '등주먹거들어앞치기', color: '#b79bff', dark: '#2e1a66', part: 'wrist', spot: (a, s) => ({ x: a.cx, y: a.headY + a.sw * 0.1, r: a.sw * 0.4 }) },
+  scissor:  { label: '가위막기', voice: '가위막기',     color: '#9fd65f', dark: '#2f4a0c', part: 'wrist', two: (a, s) => [{ x: a.cx + s * a.sw * 0.9, y: a.hipY + a.sw * 0.2, r: a.sw * 0.42 }, { x: a.cx - s * a.sw * 0.2, y: a.chestY, r: a.sw * 0.42 }] },
+  spread:   { label: '헤쳐막기', voice: '헤쳐막기',     color: '#9fd65f', dark: '#2f4a0c', part: 'wrist', two: (a, s) => [{ x: a.cx - a.sw * 0.9, y: a.chestY, r: a.sw * 0.42 }, { x: a.cx + a.sw * 0.9, y: a.chestY, r: a.sw * 0.42 }] },
+  knee:     { label: '무릎치기', voice: '무릎올려치기', color: '#6fb1ff', dark: '#0d2f66', part: 'knee', kick: 'front', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.25, y: a.hipY - a.sw * 0.1, r: a.sw * 0.5 }) },
+  twinpunch: { label: '젖혀지르기', voice: '젖혀지르기', color: '#ffb347', dark: '#5a3200', part: 'wrist', two: (a, s) => [{ x: a.cx - a.sw * 0.3, y: a.bellyY, r: a.sw * 0.4 }, { x: a.cx + a.sw * 0.3, y: a.bellyY, r: a.sw * 0.4 }] },
+  xlow:     { label: '엇걸어막기', voice: '엇걸어아래막기', color: '#9fd65f', dark: '#2f4a0c', part: 'wrist', two: (a, s) => [{ x: a.cx - a.sw * 0.18, y: a.hipY + a.sw * 0.3, r: a.sw * 0.4 }, { x: a.cx + a.sw * 0.18, y: a.hipY + a.sw * 0.3, r: a.sw * 0.4 }] },
+  backfistOut: { label: '바깥치기', voice: '등주먹바깥치기', color: '#b79bff', dark: '#2e1a66', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 1.0, y: a.headY + a.sw * 0.2, r: a.sw * 0.42 }) },
+  sideblock: { label: '옆막기',  voice: '손날옆막기',   color: '#3fd0c9', dark: '#0b4442', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.95, y: a.chestY, r: a.sw * 0.42 }) },
+  sidepunch: { label: '옆지르기', voice: '옆지르기',     color: '#ffb347', dark: '#5a3200', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 1.35, y: a.chestY, r: a.sw * 0.42 }) },
+  targetKick: { label: '표적차기', voice: '표적차기',   color: '#6fb1ff', dark: '#0d2f66', part: 'ankle', kick: 'front', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.2, y: a.chestY + a.sw * 0.2, r: a.sw * 0.6 }) },
+  // 태극 8장
+  augOut:   { label: '거들어막기', voice: '거들어바깥막기', color: '#5fd6a5', dark: '#0c4a33', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.9, y: a.chestY + a.sw * 0.1, r: a.sw * 0.45 }) },
+  jumpkick: { label: '두발당성', voice: '두발당성앞차기', color: '#6fb1ff', dark: '#0d2f66', part: 'ankle', kick: 'jump', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.3, y: a.hipY, r: a.sw * 0.6 }) },
+  flykick:  { label: '뛰어차기', voice: '뛰어앞차기',   color: '#6fb1ff', dark: '#0d2f66', part: 'ankle', kick: 'jump', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.3, y: a.hipY - a.sw * 0.1, r: a.sw * 0.6 }) },
+  wblock:   { label: '외산틀',  voice: '외산틀막기',   color: '#9fd65f', dark: '#2f4a0c', part: 'wrist', two: (a, s) => [{ x: a.cx + s * a.sw * 0.9, y: a.headY + a.sw * 0.15, r: a.sw * 0.42 }, { x: a.cx - s * a.sw * 0.9, y: a.hipY + a.sw * 0.2, r: a.sw * 0.42 }] },
+  pullpunch: { label: '당겨지르기', voice: '당겨지르기', color: '#ffb347', dark: '#5a3200', part: 'wrist', spot: (a, s) => ({ x: a.cx, y: a.chestY, r: a.sw * 0.5 }) },
+  augLowBlock: { label: '거들어아래', voice: '아래거들어막기', color: '#2fd38a', dark: '#0b3d25', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.95, y: a.hipY + (a.kneeY - a.hipY) * 0.35, r: a.sw * 0.5 }) },
 };
+function targetSpots(a, k, side) { const kind = KIND[k], s = side === 'L' ? -1 : 1; return kind.two ? kind.two(a, s) : [kind.spot(a, s)]; }
+function targetPos(a, k, side) { return targetSpots(a, k, side)[0]; }
+function partsOf(a, part) { return part === 'ankle' ? a.ankles : part === 'elbow' ? a.elbows : part === 'knee' ? a.knees : a.wrists; }
 const INK = '#22263a', INK2 = '#5b627f', INK3 = '#9aa1bf', PINK = '#ff7aa2', ORANGE = '#ff9a62';
 const FONT_NUM = '"Nunito", "Noto Sans KR", sans-serif';
 const FONT_KO = '"Noto Sans KR", "Nunito", sans-serif';
@@ -127,6 +178,51 @@ const COURSES = [
       { steps: ['kick', 'mid', 'mid'], name: '앞차고 두 번 지르기' },
       { steps: ['kblock', 'mid'], name: '손날막고 지르기' },
       { steps: ['kick', 'low', 'mid'], name: '앞차고 아래막고 지르기' },
+    ].filter(t => (t.steps ? t.name : t) !== prev)) },
+  { id: 'tg4', name: '태극 4장', sub: '거들어막기 · 세워찌르기 · 제비품 · 옆차기', seconds: 60, highLift: 0.6,
+    next: (prev) => pick([
+      'augkblock', 'spear', 'swallow', 'sidekick', 'backfist', 'outblock', 'inblock',
+      { steps: ['augkblock', 'spear'], name: '거들어막고 찌르기' },
+      { steps: ['augkblock', 'spear'], name: '거들어막고 찌르기' },
+      { steps: ['spear', 'swallow'], name: '찌르고 제비품안치기' },
+      { steps: ['sidekick', 'sidekick', 'augkblock'], name: '옆차고 옆차고 거들어막기' },
+      { steps: ['outblock', 'kick', 'inblock'], name: '바깥막고 앞차고 안막기' },
+    ].filter(t => (t.steps ? t.name : t) !== prev)) },
+  { id: 'tg5', name: '태극 5장', sub: '메주먹 · 팔꿈치 · 옆차기', seconds: 60, highLift: 0.6,
+    next: (prev) => pick([
+      'hammer', 'elbowTurn', 'elbowTarget', 'sidekick', 'backfist', 'inblock', 'low',
+      { steps: ['low', 'hammer'], name: '아래막고 메주먹내려치기' },
+      { steps: ['low', 'hammer'], name: '아래막고 메주먹내려치기' },
+      { steps: ['inblock', 'inblock'], name: '안막고 안막기' },
+      { steps: ['sidekick', 'elbowTarget'], name: '옆차고 팔꿈치표적치기' },
+      { steps: ['kick', 'backfist'], name: '앞차고 등주먹앞치기' },
+      { steps: ['kblock', 'elbowTurn'], name: '손날막고 팔꿈치돌려치기' },
+    ].filter(t => (t.steps ? t.name : t) !== prev)) },
+  { id: 'tg6', name: '태극 6장', sub: '비틀어막기 · 바탕손 · 돌려차기', seconds: 60, highLift: 0.6,
+    next: (prev) => pick([
+      'twistblock', 'faceout', 'spreadLow', 'palm', 'roundkick', 'roundkick', 'augkblock', 'mid',
+      { steps: ['twistblock', 'roundkick', 'faceout', 'mid'], name: '비틀어막고 돌려차고 막고 지르기' },
+      { steps: ['twistblock', 'roundkick'], name: '비틀어막고 돌려차기' },
+      { steps: ['augkblock', 'augkblock'], name: '거들어막기 두 번' },
+      { steps: ['palm', 'mid', 'palm', 'mid'], name: '바탕손막고 지르기 두 번' },
+      { steps: ['faceout', 'mid'], name: '얼굴바깥막고 지르기' },
+    ].filter(t => (t.steps ? t.name : t) !== prev)) },
+  { id: 'tg7', name: '태극 7장', sub: '가위막기 · 헤쳐막기 · 무릎치기 · 젖혀지르기', seconds: 60, highLift: 0.6,
+    next: (prev) => pick([
+      'augLow', 'augPalm', 'augBackfist', 'scissor', 'spread', 'knee', 'twinpunch', 'xlow', 'backfistOut', 'sideblock', 'sidepunch', 'targetKick',
+      { steps: ['augPalm', 'augBackfist'], name: '바탕손막고 등주먹앞치기' },
+      { steps: ['scissor', 'scissor'], name: '가위막기 두 번' },
+      { steps: ['spread', 'knee', 'twinpunch', 'xlow'], name: '헤쳐막고 무릎치고 젖혀지르고 엇걸어막기' },
+      { steps: ['backfistOut', 'targetKick', 'elbowTarget', 'backfistOut'], name: '등주먹치고 표적차고 팔꿈치 등주먹' },
+      { steps: ['sideblock', 'sidepunch'], name: '옆막고 옆지르기' },
+    ].filter(t => (t.steps ? t.name : t) !== prev)) },
+  { id: 'tg8', name: '태극 8장', sub: '두발당성 · 외산틀막기 · 당겨지르기', seconds: 60, highLift: 0.6,
+    next: (prev) => pick([
+      'augOut', 'jumpkick', 'jumpkick', 'wblock', 'pullpunch', 'augLowBlock', 'flykick', 'kblock', 'palm',
+      { steps: ['jumpkick', 'inblock', 'mid', 'mid'], name: '두발당성 안막고 두 번 지르기' },
+      { steps: ['jumpkick', 'inblock', 'mid', 'mid'], name: '두발당성 안막고 두 번 지르기' },
+      { steps: ['augkblock', 'kick', 'mid', 'palm'], name: '거들어막고 차고 지르고 바탕손막기' },
+      { steps: ['kblock', 'elbowTurn', 'backfist', 'mid'], name: '손날막고 팔꿈치 등주먹 지르기' },
     ].filter(t => (t.steps ? t.name : t) !== prev)) },
 ];
 const taskKey = (t) => t.steps ? t.name : t;
@@ -181,23 +277,10 @@ const G = {
 };
 const LANE_COLORS = ['#ff7aa2', '#6fb1ff', '#2fd38a', '#ffb347'];
 window.__G = G;   // 점검용
-window.__api = { pressPlay: () => pressPlay(), targetPos: (a, k, sd) => targetPos(a, k, sd) };
+window.__api = { pressPlay: () => pressPlay(), targetPos: (a, k, sd) => targetPos(a, k, sd), targetSpots: (a, k, sd) => targetSpots(a, k, sd), KIND, COURSES };
 
 /* ── 몸 기준점 (카메라 랜드마크에서 계산) ────────────────
    { cx, sw, headY, chestY, hipY, kneeY, wrists:[{x,y}], ankles:[{x,y}] } */
-
-function targetPos(a, kind, side) {
-  const s = side === 'L' ? -1 : 1;
-  switch (kind) {
-    case 'low':  return { x: a.cx + s * a.sw * 0.95, y: a.hipY + (a.kneeY - a.hipY) * 0.35, r: a.sw * 0.5 };   // 허벅지 중간 옆
-    case 'mid':  return { x: a.cx, y: a.chestY, r: a.sw * 0.5 };                                                 // 가슴 정중앙
-    case 'high': return { x: a.cx + s * a.sw * 0.15, y: a.headY - a.sw * (COURSES[G.course].highLift || 0.25), r: a.sw * (COURSES[G.course].highLift ? 0.45 : 0.5) };
-    case 'face': return { x: a.cx, y: a.headY + a.sw * 0.08, r: a.sw * 0.4 };                                  // 인중 높이, 몸 정중앙
-    case 'kblock': return { x: a.cx + s * a.sw * 0.95, y: a.shoulderY, r: a.sw * 0.45 };                         // 어깨 높이, 몸 바깥쪽
-    case 'kin':    return { x: a.cx, y: a.shoulderY - a.sw * 0.28, r: a.sw * 0.38 };                             // 목 높이, 몸 정중앙
-    case 'kick': return { x: a.cx + s * a.sw * 0.3, y: a.kneeY - a.sw * 0.15, r: a.sw * 0.6 };   // 차는 다리 쪽, 무릎 높이
-  }
-}
 
 /* ── 타깃 만들기·판정: 모두 같은 동작을 같은 순간에 ──────
    타깃은 한 번에 하나(G.cur)만 뜨고, 참가자 전원이 같은 종류·같은 쪽을 받는다.
@@ -250,34 +333,56 @@ function updateTargets() {
     const t = p.target; if (!t || t.hit) continue;
     const a = p.anchors; if (!a) continue;
     const k = t.steps[t.idx], kind = KIND[k];
-    const pos = targetPos(a, k, t.side);
-    const parts = kind.part === 'wrist' ? a.wrists : a.ankles;
-    // 박자가 켜지는 순간 이미 타깃 안에 있던 손·발은 한 번 빠져나갔다 들어와야 인정 (겨룸새로 가슴 앞에 둔 손 등)
-    if (!t.blocked) t.blocked = parts.map(pt => !!pt && Math.hypot(pt.x - pos.x, pt.y - pos.y) < pos.r);
-    if (kind.fromOutside && !t.outside) t.outside = parts.map(() => false);
-    for (let i = 0; i < parts.length; i++) {
-      const pt = parts[i]; if (!pt) continue;
-      const d = Math.hypot(pt.x - pos.x, pt.y - pos.y);
-      if (t.blocked[i]) { if (d > pos.r * 1.15) t.blocked[i] = false; continue; }
-      if (kind.fromOutside) {   // 손날안치기: 손이 어깨 폭 바깥에서 옆으로 들어와야 한다 (아래에서 올라오는 지르기와 구분)
-        if (Math.abs(pt.x - a.cx) > a.sw * 0.8) t.outside[i] = true;
-        if (!t.outside[i]) continue;
-      }
-      // 같은 부위 연속(두 번 지르기)은 반대 손이어야 한다
-      if (t.idx > 0 && t.steps[t.idx - 1] === k && t.used[t.idx - 1] === i) continue;
-      // 앞차기: 발(발목·발끝)이 무릎 높이까지 올라오면 성공. 정면 카메라에선 발이 카메라 쪽으로 나가 좌우 위치가 애매하므로 높이 위주로 본다
-      const kicked = kind.part === 'ankle' && pt.y <= pos.y + pos.r * 0.5 && Math.abs(pt.x - a.cx) < a.sw * 1.3;
-      if (kicked || d < pos.r) {
-        const last = t.idx === t.steps.length - 1;
-        const gain = 10 + Math.min(p.streak, 5) * 2 + (last && t.steps.length > 1 ? 10 * (t.steps.length - 1) : 0);   // 마지막 박자에 연결 보너스
-        p.hits++; p.streak++; p.score += gain;
-        t.hits[t.idx] = G.now; t.gains[t.idx] = gain; t.used[t.idx] = i;
-        burst(pos.x, pos.y, kind.color);
-        if (last) { t.hit = G.now; t.gain = gain; sfx.hit(); }
-        else { sfx.kick(); t.idx++; t.blocked = null; t.outside = null; }   // 다음 박자가 즉시 켜진다
-        break;
+    const spots = targetSpots(a, k, t.side), pos = spots[0];
+    const parts = partsOf(a, kind.part);
+    const inside = (pt, sp) => !!pt && Math.hypot(pt.x - sp.x, pt.y - sp.y) < sp.r;
+    let hitIdx = -1;
+    if (kind.two) {
+      // 양손 기술: 두 자리를 서로 다른 손이 동시에 채워야 한다. 켜질 때 이미 채워져 있었으면 한 번 풀었다가 다시 해야 인정
+      const w = a.wrists, ok = (inside(w[0], spots[0]) && inside(w[1], spots[1])) || (inside(w[0], spots[1]) && inside(w[1], spots[0]));
+      if (t.blocked === null) t.blocked = ok;
+      if (t.blocked) { if (!ok) t.blocked = false; }
+      else if (ok) hitIdx = 0;
+    } else {
+      // 박자가 켜지는 순간 이미 타깃 안에 있던 손·발은 한 번 빠져나갔다 들어와야 인정 (겨룸새로 가슴 앞에 둔 손 등)
+      if (!t.blocked) t.blocked = parts.map(pt => inside(pt, pos));
+      if ((kind.fromOutside || kind.fromAbove) && !t.outside) t.outside = parts.map(() => false);
+      for (let i = 0; i < parts.length; i++) {
+        const pt = parts[i]; if (!pt) continue;
+        const d = Math.hypot(pt.x - pos.x, pt.y - pos.y);
+        if (t.blocked[i]) { if (d > pos.r * 1.15) t.blocked[i] = false; continue; }
+        if (kind.fromOutside) {   // 안치기·안막기: 손이 어깨 폭 바깥에서 옆으로 들어와야 한다 (아래에서 올라오는 지르기와 구분)
+          if (Math.abs(pt.x - a.cx) > a.sw * 0.8) t.outside[i] = true;
+          if (!t.outside[i]) continue;
+        }
+        if (kind.fromAbove) {     // 내려치기: 손이 머리 높이를 거쳐 내려와야 한다
+          if (pt.y < a.headY + a.sw * 0.2) t.outside[i] = true;
+          if (!t.outside[i]) continue;
+        }
+        // 같은 손 기술 연속(두 번 지르기)은 반대 손이어야 한다. 발은 같은 발 연속(옆차기 두 번)이 정상이라 제한 없음
+        if (kind.part === 'wrist' && t.idx > 0 && t.steps[t.idx - 1] === k && t.used[t.idx - 1] === i) continue;
+        let ok;
+        if (kind.kick) {
+          // 차기: 발이 타깃 높이까지 올라오면 성공. 정면 카메라에선 앞차기 발이 카메라 쪽으로 나가 좌우가 애매하므로 높이 위주로 본다
+          const highEnough = pt.y <= pos.y + pos.r * 0.5;
+          if (kind.kick === 'side') ok = highEnough && Math.abs(pt.x - a.cx) > a.sw * 0.45;                 // 옆차기·돌려차기: 몸 옆으로
+          else if (kind.kick === 'jump') {                                                                    // 뛰어 차기: 반대 발도 바닥에서 떨어져야
+            const other = a.ankles[(i % 2 === 0) ? 1 : 0], shin = a.kneeY - a.hipY;
+            ok = highEnough && Math.abs(pt.x - a.cx) < a.sw * 1.3 && !!other && other.y < a.kneeY + shin * 0.55;
+          } else ok = highEnough && Math.abs(pt.x - a.cx) < a.sw * 1.3;
+          ok = ok || d < pos.r;
+        } else ok = d < pos.r;
+        if (ok) { hitIdx = i; break; }
       }
     }
+    if (hitIdx < 0) continue;
+    const last = t.idx === t.steps.length - 1;
+    const gain = 10 + Math.min(p.streak, 5) * 2 + (last && t.steps.length > 1 ? 10 * (t.steps.length - 1) : 0);   // 마지막 박자에 연결 보너스
+    p.hits++; p.streak++; p.score += gain;
+    t.hits[t.idx] = G.now; t.gains[t.idx] = gain; t.used[t.idx] = hitIdx;
+    for (const sp of spots) burst(sp.x, sp.y, kind.color);
+    if (last) { t.hit = G.now; t.gain = gain; sfx.hit(); }
+    else { sfx.kick(); t.idx++; t.blocked = null; t.outside = null; }   // 다음 박자가 즉시 켜진다
   }
 }
 
@@ -410,7 +515,7 @@ function anchorsFromLandmarks(lm) {
   return {
     cx: (ls.x + rs.x + lh.x + rh.x) / 4, sw, shoulderY,
     headY: nose.y, chestY: shoulderY + (hipY - shoulderY) * 0.3, bellyY: shoulderY + (hipY - shoulderY) * 0.72, hipY, kneeY: (lk.y + rk.y) / 2,
-    wrists: [P(15), P(16)], ankles: [P(27), P(28), P(31), P(32)],
+    wrists: [P(15), P(16)], ankles: [P(27), P(28), P(31), P(32)], elbows: [P(13), P(14)], knees: [P(25), P(26)],
   };
 }
 function readPoses() {
@@ -532,8 +637,12 @@ function drawDisc(pos, kind, r, left, ghost) {   // 파스텔 원반. ghost = �
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 8; ctx.lineCap = 'round'; shadow('rgba(60,80,120,0.25)', 10, 2);
     ctx.beginPath(); ctx.arc(pos.x, pos.y, r + 16, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * left); ctx.stroke(); noShadow();
   }
-  txt(kind.label, pos.x, pos.y + r * 0.04, Math.round(r * 0.5), { color: kind.dark });
+  txt(kind.label, pos.x, pos.y + r * 0.04, Math.round(Math.min(r * 0.5, r * 1.75 / Math.max(2, kind.label.length))), { color: kind.dark });
   ctx.globalAlpha = 1;
+}
+function drawSpots(a, k, side, kind, scale, left, ghost) {   // 양손 기술은 두 자리를 모두 그린다 (진행 링은 첫 자리에만)
+  const sps = targetSpots(a, k, side);
+  for (let i = sps.length - 1; i >= 0; i--) drawDisc(sps[i], kind, sps[i].r * scale, i === 0 ? left : 0, ghost || i > 0);
 }
 function drawArrow(p1, p2, alpha) {   // 박자 사이를 잇는 점선 화살
   ctx.globalAlpha = alpha; ctx.strokeStyle = '#fff'; ctx.lineWidth = 6; ctx.lineCap = 'round'; ctx.setLineDash([2, 16]);
@@ -553,14 +662,14 @@ function drawTarget(p) {
   const n = t.steps.length, cur = t.hit ? n : t.idx;
   // 아직 오지 않은 박자: 예고(반투명) + 화살
   for (let i = cur; i < n - 1; i++) drawArrow(poss[i], poss[i + 1], 0.85 * grow);
-  for (let i = n - 1; i > cur; i--) drawDisc(poss[i], kinds[i], poss[i].r * 0.8 * grow, 0, true);
+  for (let i = n - 1; i > cur; i--) drawSpots(a, t.steps[i], t.side, kinds[i], 0.8 * grow, 0, true);
   // 이미 맞힌 박자: 성공 효과 (마지막 박자엔 연결 이름)
   for (let i = 0; i < cur; i++) drawHitFx(poss[i], kinds[i], t.hits[i], t.gains[i], i === n - 1 && n > 1 ? t.name + '!' : null);
   // 지금 맞혀야 할 박자
   if (!t.hit) {
     const since = cur > 0 ? G.now - t.hits[cur - 1] : Infinity;
     const pop = cur > 0 ? 0.8 + 0.2 * ease(Math.min(1, since / 120)) : grow;
-    drawDisc(poss[cur], kinds[cur], poss[cur].r * pop, left, false);
+    drawSpots(a, t.steps[cur], t.side, kinds[cur], pop, left, false);
   }
 }
 function ease(k) { return 1 - Math.pow(1 - k, 3); }
