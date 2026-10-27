@@ -212,7 +212,6 @@ function toggleFull() {
 $('hSound').addEventListener('click', toggleSound); $('gSound').addEventListener('click', toggleSound);
 $('hFull').addEventListener('click', toggleFull); $('gFull').addEventListener('click', toggleFull);
 $('startBtn').addEventListener('click', () => begin(lastGame));
-$('demoBtn').addEventListener('click', () => { unlockAudio(); setMode('demo'); refreshMode(); openGame(lastGame); });
 
 /* ── 키보드 ── */
 const anyDialogOpen = () => $('consent').open || $('settings').open;
