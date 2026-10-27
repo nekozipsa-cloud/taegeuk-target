@@ -31,10 +31,10 @@ const CARD = {
   goalkeeper: { img: 'goalkeeper.jpg', text: '날아오는 공을 발차기로 막아요!', tags: [['🛡️', '반응 속도'], ['📊', '순발력']] },
   mimic: { img: 'mimic.jpg', text: '화면의 동작을 보고 함께 따라 해요!', tags: [['👥', '집중력'], ['📊', '동작 인식']] },
   island: { img: 'island.jpg', text: '흔들리는 섬에서 균형을 지켜요!', tags: [['🌿', '균형감각'], ['📊', '코어 근력']] },
-  runner: { img: 'runner.svg', text: '숙이고 피하고 차면서 달려요!', tags: [['⚡', '민첩성'], ['📊', '전신 운동']] },
-  treasure: { img: 'treasure.svg', text: '띠 색깔 신호에 맞춰 보물을 찾아요!', tags: [['🎨', '색 구별'], ['🧠', '판단력']] },
-  tiger: { img: 'tiger.svg', text: '호랑이 발자국 순서를 함께 기억해요!', tags: [['🧠', '기억력'], ['👥', '팀워크']] },
-  combo: { img: 'combo.svg', text: '지르기·막기·발차기로 콤보를 이어요!', tags: [['🎵', '리듬감'], ['🔥', '연속 동작']] },
+  runner: { img: 'runner.jpg', text: '숙이고 피하고 차면서 달려요!', tags: [['⚡', '민첩성'], ['📊', '전신 운동']] },
+  treasure: { img: 'treasure.jpg', text: '띠 색깔 신호에 맞춰 보물을 찾아요!', tags: [['🎨', '색 구별'], ['🧠', '판단력']] },
+  tiger: { img: 'tiger.jpg', text: '호랑이 발자국 순서를 함께 기억해요!', tags: [['🧠', '기억력'], ['👥', '팀워크']] },
+  combo: { img: 'combo.jpg', text: '지르기·막기·발차기로 콤보를 이어요!', tags: [['🎵', '리듬감'], ['🔥', '연속 동작']] },
   teambattle: { img: 'teambattle.jpg', text: '셋이 힘을 모아 격파왕을 이겨요!', tags: [['🤝', '팀워크'], ['💪', '체력']] },
 };
 
