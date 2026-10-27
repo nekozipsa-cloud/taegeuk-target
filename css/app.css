@@ -143,7 +143,7 @@ kbd { display: inline-block; min-width: 1.5em; padding: 0 0.35em; margin: 0 1px;
 .hs-ic { display: grid; place-items: center; width: 2.6em; height: 2.6em; border-radius: 18px; background: #fff; font-size: 1.5rem; box-shadow: 0 0.3rem 1rem rgba(106,61,245,0.12); }
 .how-steps h3 { margin: 0.9em 0 0.4em; font-size: clamp(19px, 1.3vw, 38px); }
 .how-steps p { margin: 0; color: var(--text2); line-height: 1.6; font-size: 0.95rem; }
-.how-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(14px, 1.3vw, 36px); margin-top: clamp(14px, 1.3vw, 36px); }
+.how-notes { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(14px, 1.3vw, 36px); margin-top: clamp(14px, 1.3vw, 36px); }
 .note { padding: clamp(18px, 1.5vw, 40px); border-radius: clamp(18px, 1.4vw, 36px); background: #fff; border: 1px solid #efedf6; box-shadow: 0 0.4rem 1.4rem rgba(40,30,110,0.06); }
 .note h3 { margin: 0 0 0.5em; font-size: clamp(17px, 1.1vw, 32px); }
 .note p { margin: 0; color: var(--text2); line-height: 1.75; font-size: 0.92rem; }
