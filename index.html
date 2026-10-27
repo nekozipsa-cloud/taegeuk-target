@@ -2,795 +2,140 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>태극 타깃</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Noto+Sans+KR:wght@500;700;900&display=swap">
-<style>
-  :root { --ink: #22263a; --ink2: #5b627f; --ink3: #9aa1bf; --pink: #ff7aa2; --orange: #ff9a62; }
-  html, body { margin: 0; height: 100%; background: #f7f8fc; color: var(--ink); overflow: hidden;
-    font-family: "Nunito", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif; }
-  #stage { position: fixed; inset: 0; }
-  video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-  canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-  #panel { position: fixed; left: 12px; top: 12px; display: flex; gap: 6px; z-index: 9; opacity: 0.25; transition: opacity .2s; }
-  #panel:hover { opacity: 1; }
-  #panel button { font: 800 13px "Noto Sans KR", sans-serif; background: rgba(255,255,255,0.9); color: var(--ink2); border: 1px solid #e3e8f2; border-radius: 10px; padding: 6px 10px; cursor: pointer; }
-  #panel button:focus-visible { outline: 2px solid var(--pink); }
-  #hint { position: fixed; right: 14px; top: 12px; font-size: 12px; font-weight: 700; color: var(--ink3); z-index: 9; opacity: 0.6; text-align: right; line-height: 1.5; }
-  #toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); background: rgba(255,255,255,0.92); color: var(--ink2); font-weight: 700; font-size: 15px; padding: 10px 18px; border-radius: 20px; box-shadow: 0 12px 30px rgba(60,80,120,0.18); z-index: 9; opacity: 0; transition: opacity .3s; pointer-events: none; }
-  #toast.on { opacity: 1; }
-
-  /* ── 시작 화면 (A 시안: 글래스 파스텔 + 품세 카드 4×2) ── */
-  .screen { position: fixed; inset: 0; z-index: 5; display: none; overflow: hidden; }
-  .screen.on { display: block; }
-  #start { background: radial-gradient(circle at 15% 20%, #ffd6e8 0%, transparent 45%), radial-gradient(circle at 85% 15%, #d8e6ff 0%, transparent 45%), radial-gradient(circle at 60% 90%, #d9fff0 0%, transparent 50%), #f7f8fc; }
-  #start.cam { background: rgba(247,248,252,0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-  .brand { position: absolute; left: 0; right: 0; top: 7vh; margin: 0; display: flex; align-items: center; justify-content: center; gap: clamp(12px, 1.6vw, 28px); font-family: "Noto Sans KR", sans-serif; font-weight: 700; font-size: clamp(22px, 3.4vw, 56px); letter-spacing: -0.5px; color: var(--ink); }
-  .brand img { height: clamp(44px, min(7vw, 12vh), 120px); width: auto; display: block; }
-  .cards { position: absolute; left: 5vw; right: 5vw; top: 26vh; bottom: 20vh; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; gap: 3vh 3vw; }
-  .card { position: relative; border-radius: clamp(14px, 2.2vw, 36px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6vw; padding: 0; border: 0.15vw solid rgba(255,255,255,0.9); background: rgba(255,255,255,0.55); color: #b4b9cf; box-shadow: 0 1vw 2.6vw rgba(60,80,120,0.08); font-family: "Noto Sans KR", sans-serif; font-weight: 800; font-size: clamp(18px, 2.6vw, 44px); text-align: center; cursor: default; }
-  .card .chip { font-size: clamp(10px, 1.15vw, 18px); font-weight: 700; letter-spacing: 1px; padding: 0.35vw 1vw; border-radius: 999px; margin-top: 0.6vw; background: rgba(90,98,130,0.08); color: #9aa1bf; }
-  .card.on { cursor: pointer; background: linear-gradient(135deg, var(--pink), var(--orange)); color: #fff; box-shadow: 0 1.8vw 4vw rgba(255,122,162,0.45); }
-  .card.on .chip { background: rgba(255,255,255,0.28); color: #fff; }
-  .card.on:focus-visible { outline: 0.4vw solid var(--ink); outline-offset: 0.4vw; }
-  .card.on.wait { filter: saturate(0.45); }
-  .sub { position: absolute; left: 0; right: 0; bottom: 11vh; text-align: center; font-size: clamp(14px, 1.7vw, 24px); font-weight: 800; color: var(--ink2); }
-  .err { position: absolute; left: 10vw; right: 10vw; bottom: 5vh; text-align: center; font-size: clamp(12px, 1.3vw, 16px); font-weight: 700; color: #e0506e; }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>태권 플레이존</title>
+<meta name="description" content="웹캠 앞에서 세 명이 동시에 움직이며 즐기는 어린이 태권도 놀이 게임 10종">
+<meta name="theme-color" content="#2c2a6b">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@500;700;900&display=swap">
+<link rel="stylesheet" href="css/app.css">
 </head>
 <body>
-<div id="stage">
-  <video id="video" playsinline muted hidden></video>
-  <canvas id="c"></canvas>
-</div>
-<div id="panel">
-  <button id="bCam">카메라 켜기</button>
-  <button id="bPlay">▶ 시작</button>
-  <button id="bVoice">구령 켜짐</button>
-</div>
-<div id="hint">리모컨 ▶ 또는 Space: 시작 · 숫자 1~8: 품세 바로 시작 · V: 구령</div>
-<div id="toast"></div>
+<a class="skip" href="#gameGrid">게임 고르기로 바로 가기</a>
 
-<div id="start" class="screen">
-  <h1 class="brand"><img src="assets/logo-playcon.png" alt="PLAYCON"><span>태권도 품세 연습</span></h1>
-  <div class="cards">
-    <button class="card on" type="button" data-course="0"><span>태극 1장</span><span class="chip">누르면 시작</span></button>
-    <button class="card on" type="button" data-course="1"><span>태극 2장</span><span class="chip">누르면 시작</span></button>
-    <button class="card on" type="button" data-course="2"><span>태극 3장</span><span class="chip">누르면 시작</span></button>
-    <button class="card on" type="button" data-course="3"><span>태극 4장</span><span class="chip">누르면 시작</span></button>
-    <button class="card on" type="button" data-course="4"><span>태극 5장</span><span class="chip">누르면 시작</span></button>
-    <button class="card on" type="button" data-course="5"><span>태극 6장</span><span class="chip">누르면 시작</span></button>
-    <button class="card on" type="button" data-course="6"><span>태극 7장</span><span class="chip">누르면 시작</span></button>
-    <button class="card on" type="button" data-course="7"><span>태극 8장</span><span class="chip">누르면 시작</span></button>
+<!-- 카메라 영상: 이 브라우저 안에서만 쓰고 어디에도 보내지 않는다 -->
+<video id="cam" playsinline muted aria-hidden="true"></video>
+
+<!-- ───────── 메인 화면 ───────── -->
+<main id="home" class="screen on">
+  <header class="topbar">
+    <div class="brand"><span class="brand-ic" aria-hidden="true">🥋</span><h1>태권 플레이존</h1></div>
+    <button id="camPill" class="cam-pill" data-status="off" type="button" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="camText">카메라 꺼짐</span></button>
+    <div class="tools">
+      <button class="icon-btn" id="hSound" type="button" aria-pressed="true" aria-label="소리 켜기/끄기">🔊</button>
+      <button class="icon-btn" id="hFull" type="button" aria-label="전체 화면">⛶</button>
+      <button class="icon-btn" id="hSettings" type="button" aria-label="설정">⚙️</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-text">
+      <p class="eyebrow">3인 동시 플레이 · 협동 태권 놀이</p>
+      <h2>셋이 <em>동시에</em> 움직이면<br>게임이 시작돼요!</h2>
+      <ol class="steps">
+        <li><b>1</b> 카메라 앞 왼쪽·가운데·오른쪽에 한 명씩 서요</li>
+        <li><b>2</b> 세 명을 한꺼번에 알아보고 각자 점수를 모아요</li>
+        <li><b>3</b> 지르기·발차기로 함께 팀 목표를 달성해요</li>
+      </ol>
+      <div class="hero-actions">
+        <button id="startBtn" class="btn huge primary" type="button">함께 시작하기 ▶</button>
+        <button id="demoBtn" class="btn" type="button">카메라 없이 체험</button>
+      </div>
+      <p id="modeLine" class="mode-line" aria-live="polite"></p>
+    </div>
+    <figure class="preview" aria-label="카메라 미리보기와 세 사람 자리 안내">
+      <canvas id="preview" width="640" height="360"></canvas>
+      <div id="previewEmpty" class="preview-empty">
+        <div class="trio" aria-hidden="true"><span class="p1">1</span><span class="p2">2</span><span class="p3">3</span></div>
+        <p>카메라를 켜면 여기에서<br>세 친구가 동시에 보여요</p>
+      </div>
+      <figcaption id="previewCap">플레이어 1·2·3은 순서를 기다리지 않고 동시에 함께 해요</figcaption>
+    </figure>
+  </section>
+
+  <section class="games" aria-labelledby="gamesTitle">
+    <div class="games-head">
+      <h2 id="gamesTitle">게임 고르기</h2>
+      <p>카드를 누르면 바로 시작해요 · 모든 게임 3명 동시 · 협동</p>
+    </div>
+    <div id="gameGrid" class="grid"></div>
+  </section>
+
+  <footer class="foot">
+    <p>🔒 카메라 영상은 이 기기의 브라우저 안에서만 처리돼요. 저장하거나 서버로 보내지 않아요.</p>
+    <p>키보드: 1번 <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd>·<kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / 2번 <kbd>U</kbd><kbd>I</kbd><kbd>O</kbd>·<kbd>J</kbd><kbd>K</kbd><kbd>L</kbd> / 3번 <kbd>7</kbd><kbd>8</kbd><kbd>9</kbd>·<kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> (자세한 건 ⚙️ 설정)</p>
+  </footer>
+</main>
+
+<!-- ───────── 게임 화면 ───────── -->
+<section id="game" class="screen" aria-label="게임">
+  <canvas id="stage"></canvas>
+  <div class="hud-top">
+    <button class="icon-btn" id="gBack" type="button" aria-label="메인으로">←</button>
+    <div class="g-title"><span id="gIcon" aria-hidden="true"></span><span id="gTitle"></span></div>
+    <div class="g-goal" aria-label="팀 목표"><span id="gGoalText"></span><span class="bar"><i id="gGoalFill"></i></span></div>
+    <div class="g-timer" id="gTimerWrap" aria-label="남은 시간"><span id="gTimer">60</span><small>초</small></div>
+    <div class="g-score" aria-label="팀 점수"><small>팀</small><span id="gScore">0</span></div>
+    <div class="tools">
+      <button class="icon-btn" id="gPause" type="button" aria-pressed="false" aria-label="일시정지">⏸</button>
+      <button class="icon-btn" id="gRestart" type="button" aria-label="다시 시작">↻</button>
+      <button class="icon-btn" id="gSound" type="button" aria-pressed="true" aria-label="소리 켜기/끄기">🔊</button>
+      <button class="icon-btn" id="gFull" type="button" aria-label="전체 화면">⛶</button>
+    </div>
   </div>
-  <div id="startSub" class="sub">품세를 누르면 카메라가 켜지고 바로 시작합니다 · 4명까지</div>
-  <div id="startErr" class="err"></div>
-</div>
-</div>
+  <div id="gPlayers" class="hud-players"></div>
+  <div id="gOverlay" class="overlay" hidden></div>
+</section>
 
-<script type="module">
-/* ═══════════════════════════════════════════════════════════
-   태극 타깃 — 동작 목업
-   타깃이 뜨면 맞는 높이로 친다. 판정은 "닿았는가" 하나.
-   ═══════════════════════════════════════════════════════════ */
+<!-- ───────── 카메라 안내·동의 ───────── -->
+<dialog id="consent" aria-labelledby="consentTitle">
+  <form method="dialog" class="panel">
+    <h2 id="consentTitle">📷 카메라를 켜기 전에</h2>
+    <ul class="notice">
+      <li><b>안전 먼저</b> 주변 2m 안의 물건을 치우고, 친구와 팔을 벌려도 닿지 않게 떨어져 서요. 미끄럽지 않은 바닥에서, 선생님이나 어른과 함께 해요.</li>
+      <li><b>영상은 이 기기 안에서만</b> 동작 인식은 브라우저 안에서 바로 처리되고, 영상을 저장하거나 서버로 보내지 않아요. (인식 프로그램 파일만 처음에 내려받아요)</li>
+      <li><b>세 명 동시 인식</b> 카메라 앞 왼쪽·가운데·오른쪽에 한 명씩, 머리부터 발끝까지 보이게 서요.</li>
+    </ul>
+    <p id="consentErr" class="err" role="alert" hidden></p>
+    <div class="actions">
+      <button class="btn primary" value="camera" id="consentCam">동의하고 카메라 켜기</button>
+      <button class="btn" value="keys">키보드·터치로 하기</button>
+      <button class="btn" value="demo">자동 데모 보기</button>
+    </div>
+    <button class="close" value="cancel" aria-label="닫기">✕</button>
+  </form>
+</dialog>
 
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-const video = document.getElementById('video');
-const toastEl = document.getElementById('toast');
-let W = 0, H = 0, DPR = 1;
+<!-- ───────── 설정 ───────── -->
+<dialog id="settings" aria-labelledby="setTitle">
+  <form method="dialog" class="panel">
+    <h2 id="setTitle">⚙️ 설정</h2>
+    <div class="set-grid">
+      <label>조작 방식
+        <select id="sMode"><option value="camera">카메라 (3인 동작 인식)</option><option value="keys">키보드·터치</option><option value="demo">자동 데모</option></select></label>
+      <label>인식 민감도
+        <select id="sSens"><option value="low">낮게 (크게 움직여야 인정)</option><option value="normal">보통</option><option value="high">높게 (작은 동작도 인정)</option></select></label>
+      <label>라운드 시간
+        <select id="sTime"><option value="45">45초</option><option value="60">60초</option><option value="90">90초</option></select></label>
+      <label class="chk"><input type="checkbox" id="sMirror"> 카메라 좌우 반전 (거울처럼 보기)</label>
+      <label class="chk"><input type="checkbox" id="sSound"> 효과음</label>
+      <label class="chk"><input type="checkbox" id="sReduce"> 움직임 효과 줄이기</label>
+      <label class="chk"><input type="checkbox" id="sPads"> 게임 화면에 터치 버튼 보이기</label>
+    </div>
+    <p class="small">왼쪽·오른쪽은 언제나 <b>화면에 보이는 방향</b>으로 판정해요. 반전을 바꿔도 화면 속 화살표 쪽으로 움직이면 맞아요.</p>
+    <h3>키보드 (세 명 동시)</h3>
+    <ul id="keyHelp" class="keyhelp"></ul>
+    <p class="small">공통: <kbd>Enter</kbd> 시작 · <kbd>Esc</kbd>/<kbd>P</kbd> 일시정지 · <kbd>F</kbd> 전체 화면</p>
+    <div class="actions"><button class="btn primary" value="ok">닫기</button><button class="btn" value="camoff" id="sCamOff" type="submit">카메라 끄기</button></div>
+    <button class="close" value="cancel" aria-label="닫기">✕</button>
+  </form>
+</dialog>
 
-function resize() {
-  DPR = Math.min(window.devicePixelRatio || 1, 2);
-  W = window.innerWidth; H = window.innerHeight;
-  canvas.width = W * DPR; canvas.height = H * DPR;
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-}
-window.addEventListener('resize', resize); resize();
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-function toast(msg, ms = 2500) {
-  toastEl.textContent = msg; toastEl.classList.add('on');
-  clearTimeout(toast._t); toast._t = setTimeout(() => toastEl.classList.remove('on'), ms);
-}
-
-/* ── 타깃 종류: 높이 4가지 ──────────────────────────────── */
-/* ── 타깃 종류(기술) 표 ──────────────────────────────────
-   part: 판정에 쓰는 몸 부위 wrist(손목) | ankle(발목·발끝) | elbow(팔꿈치) | knee(무릎)
-   spot(a, s): 타깃 위치 {x, y, r}. two(a, s): 양손 기술 — 두 자리를 각각 다른 손이 채워야 성공
-   kick: 'front'(무릎 높이 이상, 몸 앞) | 'side'(높이 이상, 몸 옆으로) | 'jump'(front + 반대 발도 바닥에서 떨어짐)
-   fromOutside: 손이 어깨 폭 바깥을 거쳐 옆으로 들어와야 인정(안치기·안막기류)   fromAbove: 손이 머리 높이를 거쳐 내려와야 인정(내려치기)
-   s = 왼쪽(-1)/오른쪽(+1). 화면 좌표라 숫자는 어깨 폭(sw) 배수. */
-const HL = () => (COURSES[G.course].highLift || 0.25);
-const KIND = {
-  // 태극 1장
-  low:   { label: '아래',   voice: '아래막기',   color: '#2fd38a', dark: '#0b3d25', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.95, y: a.hipY + (a.kneeY - a.hipY) * 0.35, r: a.sw * 0.5 }) },
-  mid:   { label: '몸통',   voice: '몸통지르기', color: '#ffb347', dark: '#5a3200', part: 'wrist', spot: (a, s) => ({ x: a.cx, y: a.chestY, r: a.sw * 0.5 }) },
-  high:  { label: '얼굴',   voice: '얼굴막기',   color: '#ff7aa2', dark: '#5c1030', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.15, y: a.headY - a.sw * HL(), r: a.sw * (HL() > 0.3 ? 0.45 : 0.5) }) },
-  kick:  { label: '차기',   voice: '앞차기',     color: '#6fb1ff', dark: '#0d2f66', part: 'ankle', kick: 'front', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.3, y: a.kneeY - a.sw * 0.15, r: a.sw * 0.6 }) },
-  inblock: { label: '안막기', voice: '몸통안막기', color: '#5fd6a5', dark: '#0c4a33', part: 'wrist', fromOutside: true, spot: (a, s) => ({ x: a.cx + s * a.sw * 0.15, y: a.chestY, r: a.sw * 0.45 }) },
-  // 태극 2장
-  face:  { label: '지르기', voice: '얼굴지르기', color: '#b79bff', dark: '#2e1a66', part: 'wrist', spot: (a, s) => ({ x: a.cx, y: a.headY + a.sw * 0.08, r: a.sw * 0.4 }) },
-  // 태극 3장
-  kblock: { label: '손날막기', voice: '손날바깥막기', color: '#3fd0c9', dark: '#0b4442', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.95, y: a.shoulderY, r: a.sw * 0.45 }) },
-  kin:    { label: '손날치기', voice: '손날안치기',   color: '#ff8fd0', dark: '#5a1a45', part: 'wrist', fromOutside: true, spot: (a, s) => ({ x: a.cx, y: a.shoulderY - a.sw * 0.28, r: a.sw * 0.38 }) },
-  // 태극 4장
-  augkblock: { label: '거들어막기', voice: '손날거들어바깥막기', color: '#3fd0c9', dark: '#0b4442', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.9, y: a.chestY, r: a.sw * 0.45 }) },
-  spear:   { label: '찌르기',   voice: '세워찌르기',   color: '#ffc46b', dark: '#5a3200', part: 'wrist', spot: (a, s) => ({ x: a.cx, y: a.chestY - a.sw * 0.15, r: a.sw * 0.42 }) },
-  swallow: { label: '제비품',   voice: '제비품안치기', color: '#ff8fd0', dark: '#5a1a45', part: 'wrist', fromOutside: true, spot: (a, s) => ({ x: a.cx, y: a.shoulderY - a.sw * 0.28, r: a.sw * 0.38 }) },
-  sidekick: { label: '옆차기',  voice: '옆차기',       color: '#6fb1ff', dark: '#0d2f66', part: 'ankle', kick: 'side', spot: (a, s) => ({ x: a.cx + s * a.sw * 1.1, y: a.hipY, r: a.sw * 0.6 }) },
-  outblock: { label: '바깥막기', voice: '몸통바깥막기', color: '#5fd6a5', dark: '#0c4a33', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.9, y: a.chestY + a.sw * 0.1, r: a.sw * 0.45 }) },
-  backfist: { label: '등주먹',  voice: '등주먹앞치기', color: '#b79bff', dark: '#2e1a66', part: 'wrist', spot: (a, s) => ({ x: a.cx, y: a.headY + a.sw * 0.1, r: a.sw * 0.4 }) },
-  // 태극 5장
-  hammer:   { label: '메주먹',  voice: '메주먹내려치기', color: '#ff9a62', dark: '#5a2a00', part: 'wrist', fromAbove: true, spot: (a, s) => ({ x: a.cx + s * a.sw * 0.25, y: a.chestY, r: a.sw * 0.45 }) },
-  elbowTurn: { label: '팔꿈치', voice: '팔꿈치돌려치기', color: '#ff7a7a', dark: '#5a1010', part: 'elbow', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.15, y: a.headY + a.sw * 0.4, r: a.sw * 0.45 }) },
-  elbowTarget: { label: '표적치기', voice: '팔꿈치표적치기', color: '#ff7a7a', dark: '#5a1010', part: 'elbow', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.2, y: a.chestY, r: a.sw * 0.45 }) },
-  // 태극 6장
-  twistblock: { label: '비틀어막기', voice: '손날비틀어바깥막기', color: '#3fd0c9', dark: '#0b4442', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.9, y: a.headY + a.sw * 0.15, r: a.sw * 0.42 }) },
-  faceout:  { label: '얼굴바깥', voice: '얼굴바깥막기', color: '#ff7aa2', dark: '#5c1030', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.9, y: a.headY + a.sw * 0.15, r: a.sw * 0.42 }) },
-  spreadLow: { label: '헤쳐막기', voice: '아래헤쳐막기', color: '#9fd65f', dark: '#2f4a0c', part: 'wrist', two: (a, s) => [{ x: a.cx - a.sw * 0.9, y: a.hipY + a.sw * 0.25, r: a.sw * 0.42 }, { x: a.cx + a.sw * 0.9, y: a.hipY + a.sw * 0.25, r: a.sw * 0.42 }] },
-  palm:     { label: '바탕손',  voice: '바탕손안막기', color: '#5fd6a5', dark: '#0c4a33', part: 'wrist', fromOutside: true, spot: (a, s) => ({ x: a.cx + s * a.sw * 0.15, y: a.chestY, r: a.sw * 0.42 }) },
-  roundkick: { label: '돌려차기', voice: '돌려차기',   color: '#6fb1ff', dark: '#0d2f66', part: 'ankle', kick: 'side', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.8, y: a.shoulderY + a.sw * 0.1, r: a.sw * 0.6 }) },
-  // 태극 7장
-  augLow:   { label: '손날아래', voice: '손날거들어아래막기', color: '#2fd38a', dark: '#0b3d25', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.95, y: a.hipY + (a.kneeY - a.hipY) * 0.35, r: a.sw * 0.5 }) },
-  augPalm:  { label: '바탕손',  voice: '바탕손거들어안막기', color: '#5fd6a5', dark: '#0c4a33', part: 'wrist', fromOutside: true, spot: (a, s) => ({ x: a.cx + s * a.sw * 0.15, y: a.chestY, r: a.sw * 0.42 }) },
-  augBackfist: { label: '등주먹', voice: '등주먹거들어앞치기', color: '#b79bff', dark: '#2e1a66', part: 'wrist', spot: (a, s) => ({ x: a.cx, y: a.headY + a.sw * 0.1, r: a.sw * 0.4 }) },
-  scissor:  { label: '가위막기', voice: '가위막기',     color: '#9fd65f', dark: '#2f4a0c', part: 'wrist', two: (a, s) => [{ x: a.cx + s * a.sw * 0.9, y: a.hipY + a.sw * 0.2, r: a.sw * 0.42 }, { x: a.cx - s * a.sw * 0.2, y: a.chestY, r: a.sw * 0.42 }] },
-  spread:   { label: '헤쳐막기', voice: '헤쳐막기',     color: '#9fd65f', dark: '#2f4a0c', part: 'wrist', two: (a, s) => [{ x: a.cx - a.sw * 0.9, y: a.chestY, r: a.sw * 0.42 }, { x: a.cx + a.sw * 0.9, y: a.chestY, r: a.sw * 0.42 }] },
-  knee:     { label: '무릎치기', voice: '무릎올려치기', color: '#6fb1ff', dark: '#0d2f66', part: 'knee', kick: 'front', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.25, y: a.hipY - a.sw * 0.1, r: a.sw * 0.5 }) },
-  twinpunch: { label: '젖혀지르기', voice: '젖혀지르기', color: '#ffb347', dark: '#5a3200', part: 'wrist', two: (a, s) => [{ x: a.cx - a.sw * 0.3, y: a.bellyY, r: a.sw * 0.4 }, { x: a.cx + a.sw * 0.3, y: a.bellyY, r: a.sw * 0.4 }] },
-  xlow:     { label: '엇걸어막기', voice: '엇걸어아래막기', color: '#9fd65f', dark: '#2f4a0c', part: 'wrist', two: (a, s) => [{ x: a.cx - a.sw * 0.18, y: a.hipY + a.sw * 0.3, r: a.sw * 0.4 }, { x: a.cx + a.sw * 0.18, y: a.hipY + a.sw * 0.3, r: a.sw * 0.4 }] },
-  backfistOut: { label: '바깥치기', voice: '등주먹바깥치기', color: '#b79bff', dark: '#2e1a66', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 1.0, y: a.headY + a.sw * 0.2, r: a.sw * 0.42 }) },
-  sideblock: { label: '옆막기',  voice: '손날옆막기',   color: '#3fd0c9', dark: '#0b4442', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.95, y: a.chestY, r: a.sw * 0.42 }) },
-  sidepunch: { label: '옆지르기', voice: '옆지르기',     color: '#ffb347', dark: '#5a3200', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 1.35, y: a.chestY, r: a.sw * 0.42 }) },
-  targetKick: { label: '표적차기', voice: '표적차기',   color: '#6fb1ff', dark: '#0d2f66', part: 'ankle', kick: 'front', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.2, y: a.chestY + a.sw * 0.2, r: a.sw * 0.6 }) },
-  // 태극 8장
-  augOut:   { label: '거들어막기', voice: '거들어바깥막기', color: '#5fd6a5', dark: '#0c4a33', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.9, y: a.chestY + a.sw * 0.1, r: a.sw * 0.45 }) },
-  jumpkick: { label: '두발당성', voice: '두발당성앞차기', color: '#6fb1ff', dark: '#0d2f66', part: 'ankle', kick: 'jump', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.3, y: a.hipY, r: a.sw * 0.6 }) },
-  flykick:  { label: '뛰어차기', voice: '뛰어앞차기',   color: '#6fb1ff', dark: '#0d2f66', part: 'ankle', kick: 'jump', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.3, y: a.hipY - a.sw * 0.1, r: a.sw * 0.6 }) },
-  wblock:   { label: '외산틀',  voice: '외산틀막기',   color: '#9fd65f', dark: '#2f4a0c', part: 'wrist', two: (a, s) => [{ x: a.cx + s * a.sw * 0.9, y: a.headY + a.sw * 0.15, r: a.sw * 0.42 }, { x: a.cx - s * a.sw * 0.9, y: a.hipY + a.sw * 0.2, r: a.sw * 0.42 }] },
-  pullpunch: { label: '당겨지르기', voice: '당겨지르기', color: '#ffb347', dark: '#5a3200', part: 'wrist', spot: (a, s) => ({ x: a.cx, y: a.chestY, r: a.sw * 0.5 }) },
-  augLowBlock: { label: '거들어아래', voice: '아래거들어막기', color: '#2fd38a', dark: '#0b3d25', part: 'wrist', spot: (a, s) => ({ x: a.cx + s * a.sw * 0.95, y: a.hipY + (a.kneeY - a.hipY) * 0.35, r: a.sw * 0.5 }) },
-};
-function targetSpots(a, k, side) { const kind = KIND[k], s = side === 'L' ? -1 : 1; return kind.two ? kind.two(a, s) : [kind.spot(a, s)]; }
-function targetPos(a, k, side) { return targetSpots(a, k, side)[0]; }
-function partsOf(a, part) { return part === 'ankle' ? a.ankles : part === 'elbow' ? a.elbows : part === 'knee' ? a.knees : a.wrists; }
-const INK = '#22263a', INK2 = '#5b627f', INK3 = '#9aa1bf', PINK = '#ff7aa2', ORANGE = '#ff9a62';
-const FONT_NUM = '"Nunito", "Noto Sans KR", sans-serif';
-const FONT_KO = '"Noto Sans KR", "Nunito", sans-serif';
-
-/* ── 품세별 코스: 그 장의 핵심 동작을 섞어서 60초 ─────────
-   next(prev)는 과제 하나를 돌려준다. 과제 = 타깃 종류 문자열(한 박자) 또는 { steps: [...], name } (연결 동작, 여러 박자).
-   연결 동작은 경로 전체를 먼저 보여 주고, 한 박자를 맞히는 순간 그 사람의 다음 박자가 바로 켜진다.
-   highLift: 얼굴막기 타깃을 머리 위로 더 올려 얼굴지르기·손날안치기 타깃과 겹치지 않게 한다 */
-const COURSES = [
-  { id: 'tg1', name: '태극 1장', sub: '아래막기 · 몸통지르기 · 얼굴막기 · 앞차기', seconds: 60,
-    next: (prev) => pick(['low', 'mid', 'high', 'kick'].filter(k => k !== prev)) },
-  { id: 'tg2', name: '태극 2장', sub: '얼굴지르기 · 앞차고 지르기', seconds: 60, highLift: 0.6,
-    next: (prev) => {
-      const k = pick(['low', 'high', 'face', 'kick', 'kick'].filter(k => k !== prev));
-      if (k !== 'kick') return k;
-      const p2 = pick(['face', 'face', 'mid']); return { steps: ['kick', p2], name: '앞차고 ' + KIND[p2].voice };
-    } },
-  { id: 'tg3', name: '태극 3장', sub: '손날 · 앞차고 두 번 지르기', seconds: 60, highLift: 0.6,
-    next: (prev) => pick([
-      'low', 'high', 'kick', 'kblock', 'kin', 'kin',
-      { steps: ['kick', 'mid', 'mid'], name: '앞차고 두 번 지르기' },
-      { steps: ['kick', 'mid', 'mid'], name: '앞차고 두 번 지르기' },
-      { steps: ['kblock', 'mid'], name: '손날막고 지르기' },
-      { steps: ['kick', 'low', 'mid'], name: '앞차고 아래막고 지르기' },
-    ].filter(t => (t.steps ? t.name : t) !== prev)) },
-  { id: 'tg4', name: '태극 4장', sub: '거들어막기 · 세워찌르기 · 제비품 · 옆차기', seconds: 60, highLift: 0.6,
-    next: (prev) => pick([
-      'augkblock', 'spear', 'swallow', 'sidekick', 'backfist', 'outblock', 'inblock',
-      { steps: ['augkblock', 'spear'], name: '거들어막고 찌르기' },
-      { steps: ['augkblock', 'spear'], name: '거들어막고 찌르기' },
-      { steps: ['spear', 'swallow'], name: '찌르고 제비품안치기' },
-      { steps: ['sidekick', 'sidekick', 'augkblock'], name: '옆차고 옆차고 거들어막기' },
-      { steps: ['outblock', 'kick', 'inblock'], name: '바깥막고 앞차고 안막기' },
-    ].filter(t => (t.steps ? t.name : t) !== prev)) },
-  { id: 'tg5', name: '태극 5장', sub: '메주먹 · 팔꿈치 · 옆차기', seconds: 60, highLift: 0.6,
-    next: (prev) => pick([
-      'hammer', 'elbowTurn', 'elbowTarget', 'sidekick', 'backfist', 'inblock', 'low',
-      { steps: ['low', 'hammer'], name: '아래막고 메주먹내려치기' },
-      { steps: ['low', 'hammer'], name: '아래막고 메주먹내려치기' },
-      { steps: ['inblock', 'inblock'], name: '안막고 안막기' },
-      { steps: ['sidekick', 'elbowTarget'], name: '옆차고 팔꿈치표적치기' },
-      { steps: ['kick', 'backfist'], name: '앞차고 등주먹앞치기' },
-      { steps: ['kblock', 'elbowTurn'], name: '손날막고 팔꿈치돌려치기' },
-    ].filter(t => (t.steps ? t.name : t) !== prev)) },
-  { id: 'tg6', name: '태극 6장', sub: '비틀어막기 · 바탕손 · 돌려차기', seconds: 60, highLift: 0.6,
-    next: (prev) => pick([
-      'twistblock', 'faceout', 'spreadLow', 'palm', 'roundkick', 'roundkick', 'augkblock', 'mid',
-      { steps: ['twistblock', 'roundkick', 'faceout', 'mid'], name: '비틀어막고 돌려차고 막고 지르기' },
-      { steps: ['twistblock', 'roundkick'], name: '비틀어막고 돌려차기' },
-      { steps: ['augkblock', 'augkblock'], name: '거들어막기 두 번' },
-      { steps: ['palm', 'mid', 'palm', 'mid'], name: '바탕손막고 지르기 두 번' },
-      { steps: ['faceout', 'mid'], name: '얼굴바깥막고 지르기' },
-    ].filter(t => (t.steps ? t.name : t) !== prev)) },
-  { id: 'tg7', name: '태극 7장', sub: '가위막기 · 헤쳐막기 · 무릎치기 · 젖혀지르기', seconds: 60, highLift: 0.6,
-    next: (prev) => pick([
-      'augLow', 'augPalm', 'augBackfist', 'scissor', 'spread', 'knee', 'twinpunch', 'xlow', 'backfistOut', 'sideblock', 'sidepunch', 'targetKick',
-      { steps: ['augPalm', 'augBackfist'], name: '바탕손막고 등주먹앞치기' },
-      { steps: ['scissor', 'scissor'], name: '가위막기 두 번' },
-      { steps: ['spread', 'knee', 'twinpunch', 'xlow'], name: '헤쳐막고 무릎치고 젖혀지르고 엇걸어막기' },
-      { steps: ['backfistOut', 'targetKick', 'elbowTarget', 'backfistOut'], name: '등주먹치고 표적차고 팔꿈치 등주먹' },
-      { steps: ['sideblock', 'sidepunch'], name: '옆막고 옆지르기' },
-    ].filter(t => (t.steps ? t.name : t) !== prev)) },
-  { id: 'tg8', name: '태극 8장', sub: '두발당성 · 외산틀막기 · 당겨지르기', seconds: 60, highLift: 0.6,
-    next: (prev) => pick([
-      'augOut', 'jumpkick', 'jumpkick', 'wblock', 'pullpunch', 'augLowBlock', 'flykick', 'kblock', 'palm',
-      { steps: ['jumpkick', 'inblock', 'mid', 'mid'], name: '두발당성 안막고 두 번 지르기' },
-      { steps: ['jumpkick', 'inblock', 'mid', 'mid'], name: '두발당성 안막고 두 번 지르기' },
-      { steps: ['augkblock', 'kick', 'mid', 'palm'], name: '거들어막고 차고 지르고 바탕손막기' },
-      { steps: ['kblock', 'elbowTurn', 'backfist', 'mid'], name: '손날막고 팔꿈치 등주먹 지르기' },
-    ].filter(t => (t.steps ? t.name : t) !== prev)) },
-];
-const taskKey = (t) => t.steps ? t.name : t;
-const DIR_TEXT = { '←': '왼쪽으로', '→': '오른쪽으로', '↑': '앞으로', '↓': '뒤로 돌아' };
-function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
-
-/* ── 소리·구령 ──────────────────────────────────────────── */
-let audio = null;
-function beep(freq, dur = 0.12, type = 'sine', gain = 0.25) {
-  try {
-    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-    const o = audio.createOscillator(), g = audio.createGain();
-    o.type = type; o.frequency.value = freq;
-    g.gain.setValueAtTime(gain, audio.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + dur);
-    o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + dur);
-  } catch (e) { /* 소리 없어도 게임은 돈다 */ }
-}
-const sfx = {
-  spawn: () => beep(660, 0.08, 'triangle', 0.12),
-  kick:  () => beep(740, 0.09, 'square', 0.16),
-  hit:   () => { beep(880, 0.12, 'square', 0.18); setTimeout(() => beep(1320, 0.16, 'square', 0.14), 60); },
-  start: () => { beep(523, 0.1); setTimeout(() => beep(659, 0.1), 120); setTimeout(() => beep(784, 0.2), 240); },
-  end:   () => { beep(784, 0.15); setTimeout(() => beep(1047, 0.35), 160); },
-  tick:  () => beep(440, 0.05, 'sine', 0.1),
-};
-let voiceOn = true;
-function say(text) {
-  if (!voiceOn || !('speechSynthesis' in window)) return;
-  try {
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'ko-KR'; u.rate = 1.15; u.pitch = 1.05;
-    speechSynthesis.speak(u);
-  } catch (e) { /* 무시 */ }
-}
-
-/* ── 게임 상태 ──────────────────────────────────────────── */
-const G = {
-  state: 'attract',           // attract | play | result
-  course: 0,
-  players: [],                // {id, color, anchors, target, score, hits, shown, streak, window}
-  tStart: 0, tEnd: 0, now: 0,
-  seqIndex: 0,
-  cur: null, side: 'R', window: 2400, lastEnd: 0, lastKind: null,
-  resultAt: 0,
-  particles: [],
-  mode: 'none',               // none | camera
-  camError: null,
-  camLoading: false,
-  armed: false,               // 카드를 눌러 두었으면 사람이 보이는 순간 시작
-};
-const LANE_COLORS = ['#ff7aa2', '#6fb1ff', '#2fd38a', '#ffb347'];
-window.__G = G;   // 점검용
-window.__api = { pressPlay: () => pressPlay(), targetPos: (a, k, sd) => targetPos(a, k, sd), targetSpots: (a, k, sd) => targetSpots(a, k, sd), KIND, COURSES };
-
-/* ── 몸 기준점 (카메라 랜드마크에서 계산) ────────────────
-   { cx, sw, headY, chestY, hipY, kneeY, wrists:[{x,y}], ankles:[{x,y}] } */
-
-/* ── 타깃 만들기·판정: 모두 같은 동작을 같은 순간에 ──────
-   타깃은 한 번에 하나(G.cur)만 뜨고, 참가자 전원이 같은 종류·같은 쪽을 받는다.
-   판정과 점수만 사람별로 따로 한다. */
-function newTarget(task) {   // 과제 → 사람별 타깃 (steps: 박자 순서, idx: 지금 맞혀야 할 박자)
-  const steps = task.steps || [task];
-  return { steps, name: task.steps ? task.name : null, idx: 0, hits: [], gains: [], used: [], side: G.side, born: G.now, window: G.window, hit: 0, blocked: null, outside: null };
-}
-function spawnShared(task, dir) {
-  G.side = G.side === 'L' ? 'R' : 'L';
-  const steps = task.steps || [task];
-  const win = Math.round(G.window * (1 + 0.6 * (steps.length - 1)));   // 박자가 늘면 시간도 늘린다
-  G.cur = { task, steps, name: task.steps ? task.name : null, side: G.side, dir, born: G.now, window: win, done: false };
-  for (const p of G.players) { p.target = newTarget(task); p.target.window = win; p.shown += steps.length; }
-  sfx.spawn(); say(G.cur.name || KIND[steps[0]].voice);
-}
-function joinCurrent(p) {   // 라운드 중간에 들어온 사람도 지금 타깃을 같이 받는다
-  const c = G.cur; if (!c || c.done) return;
-  p.target = newTarget(c.task); p.target.born = c.born; p.target.window = c.window; p.shown += c.steps.length;
-}
-
-function updateTargets() {
-  const c = COURSES[G.course];
-  if (!G.cur) {
-    if (G.now - G.lastEnd > 650) {
-      if (c.seq) {
-        if (G.seqIndex >= c.seq.length) return;
-        const [dir, kind] = c.seq[G.seqIndex]; spawnShared(kind, dir);
-      } else {
-        spawnShared(c.next(G.lastKind), null);
-      }
-      G.lastKind = taskKey(G.cur.task);
-    }
-    return;
-  }
-  const cur = G.cur, age = G.now - cur.born;
-  const everyoneHit = G.players.length > 0 && G.players.every(p => p.target && p.target.hit);
-  if (!cur.done && (age > 500 + cur.window || everyoneHit)) {
-    cur.done = true; cur.doneAt = G.now;
-    const missed = G.players.filter(p => !p.target || !p.target.hit).length;
-    G.window = missed ? Math.min(3000, G.window + 300) : Math.max(1400, G.window - 150);   // 반이 놓치면 느리게, 다 맞히면 빠르게
-    for (const p of G.players) if (!p.target || !p.target.hit) p.streak = 0;
-  }
-  if (cur.done) {
-    if (G.now - cur.doneAt > 450) { G.cur = null; G.lastEnd = G.now; for (const p of G.players) p.target = null; if (c.seq) G.seqIndex++; }
-    return;
-  }
-  if (age < 350) return;            // 나타나는 중에는 판정 안 함
-  for (const p of G.players) {
-    const t = p.target; if (!t || t.hit) continue;
-    const a = p.anchors; if (!a) continue;
-    const k = t.steps[t.idx], kind = KIND[k];
-    const spots = targetSpots(a, k, t.side), pos = spots[0];
-    const parts = partsOf(a, kind.part);
-    const inside = (pt, sp) => !!pt && Math.hypot(pt.x - sp.x, pt.y - sp.y) < sp.r;
-    let hitIdx = -1;
-    if (kind.two) {
-      // 양손 기술: 두 자리를 서로 다른 손이 동시에 채워야 한다. 켜질 때 이미 채워져 있었으면 한 번 풀었다가 다시 해야 인정
-      const w = a.wrists, ok = (inside(w[0], spots[0]) && inside(w[1], spots[1])) || (inside(w[0], spots[1]) && inside(w[1], spots[0]));
-      if (t.blocked === null) t.blocked = ok;
-      if (t.blocked) { if (!ok) t.blocked = false; }
-      else if (ok) hitIdx = 0;
-    } else {
-      // 박자가 켜지는 순간 이미 타깃 안에 있던 손·발은 한 번 빠져나갔다 들어와야 인정 (겨룸새로 가슴 앞에 둔 손 등)
-      if (!t.blocked) t.blocked = parts.map(pt => inside(pt, pos));
-      if ((kind.fromOutside || kind.fromAbove) && !t.outside) t.outside = parts.map(() => false);
-      for (let i = 0; i < parts.length; i++) {
-        const pt = parts[i]; if (!pt) continue;
-        const d = Math.hypot(pt.x - pos.x, pt.y - pos.y);
-        if (t.blocked[i]) { if (d > pos.r * 1.15) t.blocked[i] = false; continue; }
-        if (kind.fromOutside) {   // 안치기·안막기: 손이 어깨 폭 바깥에서 옆으로 들어와야 한다 (아래에서 올라오는 지르기와 구분)
-          if (Math.abs(pt.x - a.cx) > a.sw * 0.8) t.outside[i] = true;
-          if (!t.outside[i]) continue;
-        }
-        if (kind.fromAbove) {     // 내려치기: 손이 머리 높이를 거쳐 내려와야 한다
-          if (pt.y < a.headY + a.sw * 0.2) t.outside[i] = true;
-          if (!t.outside[i]) continue;
-        }
-        // 같은 손 기술 연속(두 번 지르기)은 반대 손이어야 한다. 발은 같은 발 연속(옆차기 두 번)이 정상이라 제한 없음
-        if (kind.part === 'wrist' && t.idx > 0 && t.steps[t.idx - 1] === k && t.used[t.idx - 1] === i) continue;
-        let ok;
-        if (kind.kick) {
-          // 차기: 발이 타깃 높이까지 올라오면 성공. 정면 카메라에선 앞차기 발이 카메라 쪽으로 나가 좌우가 애매하므로 높이 위주로 본다
-          const highEnough = pt.y <= pos.y + pos.r * 0.5;
-          if (kind.kick === 'side') ok = highEnough && Math.abs(pt.x - a.cx) > a.sw * 0.45;                 // 옆차기·돌려차기: 몸 옆으로
-          else if (kind.kick === 'jump') {                                                                    // 뛰어 차기: 반대 발도 바닥에서 떨어져야
-            const other = a.ankles[(i % 2 === 0) ? 1 : 0], shin = a.kneeY - a.hipY;
-            ok = highEnough && Math.abs(pt.x - a.cx) < a.sw * 1.3 && !!other && other.y < a.kneeY + shin * 0.55;
-          } else ok = highEnough && Math.abs(pt.x - a.cx) < a.sw * 1.3;
-          ok = ok || d < pos.r;
-        } else ok = d < pos.r;
-        if (ok) { hitIdx = i; break; }
-      }
-    }
-    if (hitIdx < 0) continue;
-    const last = t.idx === t.steps.length - 1;
-    const gain = 10 + Math.min(p.streak, 5) * 2 + (last && t.steps.length > 1 ? 10 * (t.steps.length - 1) : 0);   // 마지막 박자에 연결 보너스
-    p.hits++; p.streak++; p.score += gain;
-    t.hits[t.idx] = G.now; t.gains[t.idx] = gain; t.used[t.idx] = hitIdx;
-    for (const sp of spots) burst(sp.x, sp.y, kind.color);
-    if (last) { t.hit = G.now; t.gain = gain; sfx.hit(); }
-    else { sfx.kick(); t.idx++; t.blocked = null; t.outside = null; }   // 다음 박자가 즉시 켜진다
-  }
-}
-
-function burst(x, y, color) {
-  const palette = [color, PINK, ORANGE, '#6fb1ff', '#ffd166', '#2fd38a'];
-  for (let i = 0; i < 22; i++) {
-    const a = Math.random() * Math.PI * 2, v = 160 + Math.random() * 300;
-    G.particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 120, life: 1, color: palette[i % palette.length], rot: Math.random() * 6, w: 10 + Math.random() * 8 });
-  }
-}
-
-/* ── 라운드 흐름 ───────────────────────────────────────── */
-function startRound() {
-  if (G.mode === 'none') { G.armed = true; startCamera(); return; }
-  if (!G.players.length) { toast('카메라 앞 칸에 서면 참가됩니다'); return; }
-  G.armed = false;
-  const c = COURSES[G.course];
-  for (const p of G.players) Object.assign(p, { score: 0, hits: 0, shown: 0, streak: 0, target: null });
-  G.seqIndex = 0; G.cur = null; G.window = 2400; G.lastEnd = G.now + 900; G.lastKind = null;
-  G.state = 'play'; G.tStart = G.now;
-  G.tEnd = c.seconds ? G.now + c.seconds * 1000 : 0;
-  sfx.start(); say(c.name + ' 시작');
-}
-function endRound() {
-  G.state = 'result'; G.resultAt = G.now; G.cur = null;
-  for (const p of G.players) p.target = null;
-  sfx.end();
-  const best = G.players.reduce((m, p) => Math.max(m, stars(p)), 0);
-  say(best >= 3 ? '아주 잘했습니다' : '잘했어요');
-}
-function stars(p) { if (!p.shown) return 0; const r = p.hits / p.shown; return r >= 0.8 ? 3 : r >= 0.5 ? 2 : 1; }
-function changeCourse() { /* 코스는 하나뿐 */ }
-function pressPlay() {
-  if (G.state === 'play') { G.state = 'attract'; G.armed = false; G.cur = null; for (const p of G.players) p.target = null; say('정지'); return; }
-  if (G.state === 'attract') pickCard();
-}
-
-/* ── 입력: 리모컨은 키보드 이벤트로 들어온다 ─────────── */
-window.addEventListener('keydown', (e) => {
-  const k = e.key;
-  if (k === ' ' || k === 'Enter' || k === 'PageDown') { e.preventDefault(); pressPlay(); }
-  else if (k === 'Escape' || k === 'b' || k === 'B') { if (G.state === 'play') pressPlay(); }
-  else if (/^[1-9]$/.test(k) && COURSES[+k - 1]) { e.preventDefault(); pickCard(+k - 1); }   // 숫자 키: 그 품세를 바로 시작
-  else if (k === 'v' || k === 'V') toggleVoice();
-});
-document.getElementById('bPlay').onclick = pressPlay;
-document.getElementById('bVoice').onclick = toggleVoice;
-document.getElementById('bCam').onclick = startCamera;
-const startEl = document.getElementById('start');
-const cards = [...document.querySelectorAll('.card.on')];   // 활성 품세 카드 (data-course = COURSES 번호)
-/* 품세 카드: 누르면 카메라를 켜고, 사람이 보이는 순간 바로 시작한다 */
-function pickCard(i = G.course) {
-  if (G.state !== 'attract') return;
-  G.course = i; G.armed = true; G.camError = null;
-  if (G.mode === 'none') startCamera();
-  else if (G.players.length) startRound();
-  else toast('카메라 앞 칸에 서면 바로 시작됩니다');
-}
-for (const el of cards) el.onclick = () => pickCard(+el.dataset.course);
-function syncScreens() {
-  const show = G.state === 'attract';
-  startEl.classList.toggle('on', show);
-  if (!show) return;
-  const cam = G.mode === 'camera';
-  startEl.classList.toggle('cam', cam);
-  document.getElementById('startErr').textContent = G.camError || '';
-  const n = G.players.length;
-  for (const el of cards) {
-    const mine = +el.dataset.course === G.course;
-    el.classList.toggle('wait', mine && G.camLoading);
-    el.querySelector('.chip').textContent = !mine ? '누르면 시작' : G.camLoading ? '카메라 준비 중…' : (cam && G.armed ? '곧 시작' : '누르면 시작');
-  }
-  document.getElementById('startSub').textContent = !cam
-    ? (G.camLoading ? '카메라를 켜는 중입니다' : '품세를 누르면 카메라가 켜지고 바로 시작합니다 · 4명까지')
-    : (n ? (G.armed ? `${n}명 준비됨 · 시작합니다` : `${n}명 준비됨 · 품세를 누르세요`) : '카메라 앞 칸에 서세요 (전신이 보이게)');
-}
-
-canvas.addEventListener('pointerdown', () => { if (G.state === 'result') { G.state = 'attract'; } });
-function toggleVoice() { voiceOn = !voiceOn; document.getElementById('bVoice').textContent = voiceOn ? '구령 켜짐' : '구령 꺼짐'; if (!voiceOn) speechSynthesis?.cancel(); }
-
-/* ── 카메라 + MediaPipe ───────────────────────────────── */
-let landmarker = null, lastVideoTime = -1;
-const tracked = [];   // {id, cx, lastSeen}
-window.__tracked = tracked;   // 점검용
-async function startCamera() {
-  const b = document.getElementById('bCam'); b.disabled = true; b.textContent = '준비 중…';
-  if (G.camLoading) return;
-  G.camLoading = true;
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }, audio: false });
-    video.srcObject = stream; video.hidden = false;
-    video.play().catch(() => {});
-    await new Promise((res) => video.addEventListener('loadedmetadata', res, { once: true }));
-    toast('자세 인식 프로그램을 내려받는 중 (처음 한 번, 5~15초)', 6000);
-    const mp = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/vision_bundle.mjs');
-    const fileset = await mp.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm');
-    const model = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
-    for (const delegate of ['GPU', 'CPU']) {
-      try {
-        landmarker = await mp.PoseLandmarker.createFromOptions(fileset, {
-          baseOptions: { modelAssetPath: model, delegate }, runningMode: 'VIDEO', numPoses: 4,
-          minPoseDetectionConfidence: 0.5, minPosePresenceConfidence: 0.5, minTrackingConfidence: 0.5 });
-        break;
-      } catch (e) { if (delegate === 'CPU') throw e; }
-    }
-    G.mode = 'camera'; G.camLoading = false; b.textContent = '카메라 켜짐';
-    toast('카메라 앞에 서면 바로 시작됩니다 (4명까지)');
-  } catch (e) {
-    console.warn(e);
-    b.disabled = false; b.textContent = '카메라 켜기';
-    G.camLoading = false; G.armed = false;
-    G.camError = (location.protocol === 'https:' && !location.hostname.includes('localhost'))
-      ? '이 웹 링크에서는 카메라를 쓸 수 없습니다. 도장 PC에서 "태극 타깃 시작.command"로 열어 주세요.'
-      : '카메라를 열지 못했습니다. 브라우저의 카메라 허용을 확인해 주세요. (' + (e && e.message ? e.message : e) + ')';
-    toast(G.camError, 6000);
-  }
-}
-/* 영상은 cover로 그려지므로 랜드마크도 같은 변환을 쓴다 (좌우 반전 포함) */
-function videoToScreen(nx, ny) {
-  const vw = video.videoWidth || 1280, vh = video.videoHeight || 720;
-  const s = Math.max(W / vw, H / vh);
-  const ox = (W - vw * s) / 2, oy = (H - vh * s) / 2;
-  return { x: ox + (1 - nx) * vw * s, y: oy + ny * vh * s };
-}
-function anchorsFromLandmarks(lm) {
-  const P = (i) => videoToScreen(lm[i].x, lm[i].y);
-  const ls = P(11), rs = P(12), lh = P(23), rh = P(24), lk = P(25), rk = P(26), nose = P(0);
-  const sw = Math.max(Math.hypot(ls.x - rs.x, ls.y - rs.y), Math.hypot((ls.y + rs.y) / 2 - (lh.y + rh.y) / 2) * 0.6, 40);
-  const shoulderY = (ls.y + rs.y) / 2, hipY = (lh.y + rh.y) / 2;
-  return {
-    cx: (ls.x + rs.x + lh.x + rh.x) / 4, sw, shoulderY,
-    headY: nose.y, chestY: shoulderY + (hipY - shoulderY) * 0.3, bellyY: shoulderY + (hipY - shoulderY) * 0.72, hipY, kneeY: (lk.y + rk.y) / 2,
-    wrists: [P(15), P(16)], ankles: [P(27), P(28), P(31), P(32)], elbows: [P(13), P(14)], knees: [P(25), P(26)],
-  };
-}
-function readPoses() {
-  if (!landmarker || video.currentTime === lastVideoTime) return null;
-  lastVideoTime = video.currentTime;
-  try { return landmarker.detectForVideo(video, performance.now()); } catch (e) { return null; }
-}
-
-/* ── 플레이어 목록 갱신 (칸은 화면 왼쪽부터) ─────────── */
-function syncPlayers() {
-  let list = [];
-  if (G.mode === 'camera') {
-    const res = readPoses();
-    if (res) {
-      // 어깨·엉덩이가 또렷이 보이는 사람만 (옷걸이·의자 오인식 방지)
-      const solid = res.landmarks.filter(lm => [11, 12].every(i => lm[i] && (lm[i].visibility ?? 1) > 0.6) && [23, 24].every(i => lm[i] && (lm[i].visibility ?? 1) > 0.45));
-      const seen = solid.map(anchorsFromLandmarks).filter(a => a.sw < Math.min(W, H) * 0.6).sort((a, b) => a.cx - b.cx);
-      // 이전 프레임과 가까운 사람끼리 id를 잇는다
-      const used = new Set();
-      for (const a of seen) {
-        let best = null, bd = 1e9;
-        for (const t of tracked) { if (used.has(t.id)) continue; const d = Math.abs(t.cx - a.cx); if (d < bd && d < a.sw * 3) { bd = d; best = t; } }
-        if (!best) { best = { id: Math.random().toString(36).slice(2), firstSeen: G.now }; tracked.push(best); }
-        used.add(best.id); best.cx = a.cx; best.lastSeen = G.now; best.anchors = a;
-      }
-    }
-    for (let i = tracked.length - 1; i >= 0; i--) if (G.now - tracked[i].lastSeen > 1500) tracked.splice(i, 1);
-    // 0.5초 이상 계속 보인 사람만 참가로 인정 (한 프레임 반짝 오인식 걸러냄)
-    list = tracked.filter(t => G.now - t.firstSeen > 500).sort((a, b) => a.cx - b.cx).slice(0, 4).map(t => ({ id: t.id, anchors: t.anchors }));
-  }
-  // 기존 플레이어 객체 유지 (점수 보존)
-  const byId = new Map(G.players.map(p => [p.id, p]));
-  G.players = list.map((e, i) => {
-    let p = byId.get(e.id);
-    if (!p) { p = { id: e.id, score: 0, hits: 0, shown: 0, streak: 0, target: null }; if (G.state === 'play') joinCurrent(p); }
-    p.anchors = e.anchors; p.color = LANE_COLORS[i % 4];
-    return p;
-  });
-}
-
-/* ── 그리기: 글래스 파스텔 HUD (사람은 카메라 실제 영상) ── */
-const U = () => Math.min(W, H);
-function shadow(color, blur, dy = 0) { ctx.shadowColor = color; ctx.shadowBlur = blur; ctx.shadowOffsetY = dy; }
-function noShadow() { ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; ctx.shadowColor = 'transparent'; }
-function rrect(x, y, w, h, r) {
-  ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
-}
-function glassBox(x, y, w, h, r = 24, alpha = 0.78) {
-  shadow('rgba(60,80,120,0.18)', 30, 12); ctx.fillStyle = `rgba(255,255,255,${alpha})`; rrect(x, y, w, h, r); ctx.fill(); noShadow();
-  ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 1; rrect(x, y, w, h, r); ctx.stroke();
-}
-function txt(str, x, y, size, opt = {}) {
-  ctx.font = `${opt.weight || 900} ${size}px ${opt.font || FONT_KO}`;
-  ctx.textAlign = opt.align || 'center'; ctx.textBaseline = opt.base || 'middle';
-  ctx.letterSpacing = (opt.spacing || 0) + 'px';
-  if (opt.shadow) shadow(opt.shadow, opt.blur || 16, opt.dy || 6);
-  ctx.fillStyle = opt.color || INK;
-  ctx.fillText(str, x, y);
-  noShadow(); ctx.letterSpacing = '0px';
-}
-function gradText(str, x, y, size, c1, c2, opt = {}) {
-  ctx.font = `900 ${size}px ${FONT_NUM}`; ctx.textAlign = opt.align || 'right'; ctx.textBaseline = 'middle';
-  const w = ctx.measureText(str).width, x0 = opt.align === 'left' ? x : x - w;
-  const g = ctx.createLinearGradient(x0, y - size / 2, x0 + w, y + size / 2); g.addColorStop(0, c1); g.addColorStop(1, c2);
-  shadow('rgba(255,122,162,0.35)', 24, 10); ctx.fillStyle = g; ctx.fillText(str, x, y); noShadow();
-}
-
-function draw() {
-  ctx.clearRect(0, 0, W, H);
-  if (G.mode !== 'camera') { ctx.fillStyle = '#f7f8fc'; ctx.fillRect(0, 0, W, H); }
-  if (G.state === 'play' || G.state === 'result') {
-    for (const p of G.players) { drawPlayerMark(p); if (p.target) drawTarget(p); }
-    drawParticles();
-    drawHUD();
-  }
-  if (G.state === 'result') drawResult();
-}
-
-function drawPlayerMark(p) {
-  const a = p.anchors; if (!a) return;
-  // 머리 위: 색 점 + 작은 흰 필
-  const y = a.headY - a.sw * 0.95, r = Math.max(8, a.sw * 0.09);
-  shadow('rgba(60,80,120,0.25)', 12, 4); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(a.cx, y, r * 1.7, 0, Math.PI * 2); ctx.fill(); noShadow();
-  ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(a.cx, y, r, 0, Math.PI * 2); ctx.fill();
-  if (G.mode === 'camera') {
-    ctx.fillStyle = 'rgba(255,255,255,0.9)'; shadow('rgba(60,80,120,0.3)', 8, 2);
-    for (const w of a.wrists) { ctx.beginPath(); ctx.arc(w.x, w.y, 6, 0, Math.PI * 2); ctx.fill(); }
-    for (const k of a.ankles.slice(0, 2)) { ctx.beginPath(); ctx.arc(k.x, k.y, 6, 0, Math.PI * 2); ctx.fill(); }
-    noShadow();
-  }
-}
-
-function drawHitFx(pos, kind, since, gain, comboText) {   // 흰 링 확산 + 점수 필
-  const k = Math.min(1, (G.now - since) / 450);
-  if (k >= 1) return;
-  ctx.globalAlpha = 1 - k;
-  ctx.strokeStyle = '#fff'; ctx.lineWidth = 8; shadow(kind.color, 20); ctx.beginPath(); ctx.arc(pos.x, pos.y, pos.r * (0.7 + k * 1.3), 0, Math.PI * 2); ctx.stroke(); noShadow();
-  ctx.strokeStyle = kind.color; ctx.lineWidth = 4; ctx.globalAlpha = 0.5 * (1 - k); ctx.beginPath(); ctx.arc(pos.x, pos.y, pos.r * (1 + k * 1.8), 0, Math.PI * 2); ctx.stroke();
-  ctx.globalAlpha = 1;
-  // +점수 필 (살짝 기울여 튀어오름)
-  const px = pos.x + pos.r * 1.15, py = pos.y - pos.r * (0.9 + k * 0.5), fs = Math.round(pos.r * 0.7);
-  ctx.save(); ctx.translate(px, py); ctx.rotate(-0.1); ctx.globalAlpha = 1 - Math.max(0, k - 0.6) * 2.5;
-  ctx.font = `900 ${fs}px ${FONT_NUM}`; const tw = ctx.measureText('+' + gain).width;
-  glassBox(-tw / 2 - fs * 0.5, -fs * 0.75, tw + fs, fs * 1.5, fs * 0.75, 0.95);
-  txt('+' + gain, 0, fs * 0.05, fs, { font: FONT_NUM, color: comboText ? PINK : ORANGE });
-  if (comboText) txt(comboText, 0, -fs * 1.25, Math.round(fs * 0.6), { color: PINK });
-  ctx.restore(); ctx.globalAlpha = 1;
-}
-function drawDisc(pos, kind, r, left, ghost) {   // 파스텔 원반. ghost = 아직 차례가 아닌 예고 타깃
-  if (ghost) ctx.globalAlpha = 0.5;
-  const g = ctx.createRadialGradient(pos.x - r * 0.25, pos.y - r * 0.3, r * 0.05, pos.x, pos.y, r);
-  g.addColorStop(0, '#ffffff'); g.addColorStop(0.5, kind.color); g.addColorStop(1, shadeColor(kind.color, 0.78));
-  if (!ghost) shadow(kind.color, 28, 12);
-  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2); ctx.fill(); noShadow();
-  if (ghost) {
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.setLineDash([10, 9]); ctx.beginPath(); ctx.arc(pos.x, pos.y, r + 12, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
-  } else {   // 흰 진행 링
-    ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 7; ctx.beginPath(); ctx.arc(pos.x, pos.y, r + 16, 0, Math.PI * 2); ctx.stroke();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 8; ctx.lineCap = 'round'; shadow('rgba(60,80,120,0.25)', 10, 2);
-    ctx.beginPath(); ctx.arc(pos.x, pos.y, r + 16, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * left); ctx.stroke(); noShadow();
-  }
-  txt(kind.label, pos.x, pos.y + r * 0.04, Math.round(Math.min(r * 0.5, r * 1.75 / Math.max(2, kind.label.length))), { color: kind.dark });
-  ctx.globalAlpha = 1;
-}
-function drawSpots(a, k, side, kind, scale, left, ghost) {   // 양손 기술은 두 자리를 모두 그린다 (진행 링은 첫 자리에만)
-  const sps = targetSpots(a, k, side);
-  for (let i = sps.length - 1; i >= 0; i--) drawDisc(sps[i], kind, sps[i].r * scale, i === 0 ? left : 0, ghost || i > 0);
-}
-function drawArrow(p1, p2, alpha) {   // 박자 사이를 잇는 점선 화살
-  ctx.globalAlpha = alpha; ctx.strokeStyle = '#fff'; ctx.lineWidth = 6; ctx.lineCap = 'round'; ctx.setLineDash([2, 16]);
-  const dx = p2.x - p1.x, dy = p2.y - p1.y, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
-  const x1 = p1.x + ux * (p1.r + 26), y1 = p1.y + uy * (p1.r + 26), x2 = p2.x - ux * (p2.r * 0.8 + 26), y2 = p2.y - uy * (p2.r * 0.8 + 26);
-  if (Math.hypot(x2 - x1, y2 - y1) < 20) { ctx.setLineDash([]); ctx.globalAlpha = 1; return; }
-  shadow('rgba(60,80,120,0.3)', 8, 2); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.setLineDash([]);
-  ctx.beginPath(); ctx.moveTo(x2 - ux * 18 - uy * 12, y2 - uy * 18 + ux * 12); ctx.lineTo(x2, y2); ctx.lineTo(x2 - ux * 18 + uy * 12, y2 - uy * 18 - ux * 12); ctx.stroke(); noShadow();
-  ctx.globalAlpha = 1;
-}
-function drawTarget(p) {
-  const t = p.target, a = p.anchors; if (!a) return;
-  const age = G.now - t.born;
-  const grow = ease(Math.min(1, age / 350));
-  const left = Math.max(0, 1 - Math.max(0, age - 350) / (150 + (t.window || 2400)));
-  const poss = t.steps.map(k => targetPos(a, k, t.side)), kinds = t.steps.map(k => KIND[k]);
-  const n = t.steps.length, cur = t.hit ? n : t.idx;
-  // 아직 오지 않은 박자: 예고(반투명) + 화살
-  for (let i = cur; i < n - 1; i++) drawArrow(poss[i], poss[i + 1], 0.85 * grow);
-  for (let i = n - 1; i > cur; i--) drawSpots(a, t.steps[i], t.side, kinds[i], 0.8 * grow, 0, true);
-  // 이미 맞힌 박자: 성공 효과 (마지막 박자엔 연결 이름)
-  for (let i = 0; i < cur; i++) drawHitFx(poss[i], kinds[i], t.hits[i], t.gains[i], i === n - 1 && n > 1 ? t.name + '!' : null);
-  // 지금 맞혀야 할 박자
-  if (!t.hit) {
-    const since = cur > 0 ? G.now - t.hits[cur - 1] : Infinity;
-    const pop = cur > 0 ? 0.8 + 0.2 * ease(Math.min(1, since / 120)) : grow;
-    drawSpots(a, t.steps[cur], t.side, kinds[cur], pop, left, false);
-  }
-}
-function ease(k) { return 1 - Math.pow(1 - k, 3); }
-function shadeColor(hex, f) { const n = parseInt(hex.slice(1), 16); return `rgb(${(((n >> 16) & 255) * f) | 0},${(((n >> 8) & 255) * f) | 0},${((n & 255) * f) | 0})`; }
-
-let lastFrame = 0;
-function drawParticles() {
-  const dt = Math.min(0.05, lastFrame ? (G.now - lastFrame) / 1000 : 1 / 60); lastFrame = G.now;
-  for (let i = G.particles.length - 1; i >= 0; i--) {
-    const q = G.particles[i];
-    q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 520 * dt; q.life -= dt * 1.3; q.rot += dt * 6;
-    if (q.life <= 0) { G.particles.splice(i, 1); continue; }
-    ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.rot); ctx.globalAlpha = Math.min(1, q.life * 1.5); ctx.fillStyle = q.color;
-    rrect(-q.w / 2, -q.w * 0.3, q.w, q.w * 0.6, 3); ctx.fill(); ctx.restore();
-  }
-  ctx.globalAlpha = 1;
-}
-
-function drawHUD() {
-  const c = COURSES[G.course], u = U();
-  if (G.state !== 'play') return;
-  // 상단 글래스 바: 코스 · 타이머/진행 · 막대
-  const bw = u * 0.5, bh = u * 0.11, bx = W / 2 - bw / 2, by = u * 0.035;
-  glassBox(bx, by, bw, bh, bh / 2);
-  txt(c.name, bx + bw * 0.16, by + bh / 2, Math.round(u * 0.028), { color: '#7a82a6', spacing: 2 });
-  if (c.seq) {
-    const si = G.seqIndex, cur = c.seq[Math.min(si, c.seq.length - 1)];
-    txt(cur[0], bx + bw * 0.42, by + bh / 2, Math.round(u * 0.07), { font: FONT_NUM, color: PINK });
-    txt(DIR_TEXT[cur[0]], bx + bw * 0.66, by + bh / 2 - u * 0.012, Math.round(u * 0.024), { color: INK });
-    txt(`${Math.min(si + 1, c.seq.length)} / ${c.seq.length}`, bx + bw * 0.66, by + bh / 2 + u * 0.02, Math.round(u * 0.02), { font: FONT_NUM, color: INK3 });
-    const pw = bw * 0.16, px = bx + bw * 0.79, py = by + bh / 2 - 5;
-    ctx.fillStyle = '#e3e8f2'; rrect(px, py, pw, 10, 5); ctx.fill();
-    const g = ctx.createLinearGradient(px, 0, px + pw, 0); g.addColorStop(0, PINK); g.addColorStop(1, ORANGE);
-    ctx.fillStyle = g; rrect(px, py, Math.max(10, pw * si / c.seq.length), 10, 5); ctx.fill();
-  } else {
-    const left = Math.max(0, Math.ceil((G.tEnd - G.now) / 1000));
-    txt(left, bx + bw * 0.45, by + bh / 2 + 2, Math.round(u * 0.075), { font: FONT_NUM, color: left <= 5 ? PINK : INK });
-    const pw = bw * 0.28, px = bx + bw * 0.64, py = by + bh / 2 - 5;
-    ctx.fillStyle = '#e3e8f2'; rrect(px, py, pw, 10, 5); ctx.fill();
-    const g = ctx.createLinearGradient(px, 0, px + pw, 0); g.addColorStop(0, PINK); g.addColorStop(1, ORANGE);
-    ctx.fillStyle = g; rrect(px, py, Math.max(10, pw * (G.tEnd - G.now) / (c.seconds * 1000)), 10, 5); ctx.fill();
-  }
-  // 좌측 점수 칩
-  G.players.forEach((p, i) => {
-    const x = u * 0.04, y = u * 0.17 + i * u * 0.095, w = u * 0.24, h = u * 0.08;
-    glassBox(x, y, w, h, h / 2, i ? 0.7 : 0.82);
-    ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(x + h * 0.55, y + h / 2, h * 0.16, 0, Math.PI * 2); ctx.fill();
-    txt('P' + (i + 1), x + h * 0.95, y + h / 2, Math.round(u * 0.018), { font: FONT_NUM, color: '#7a82a6', align: 'left', weight: 800 });
-    txt(p.score, x + w - h * 0.5, y + h / 2 + 1, Math.round(u * 0.045), { font: FONT_NUM, color: INK, align: 'right' });
-  });
-  // 우측 콤보 (2연속부터): 그라디언트 큰 숫자 + 흰 필
-  const best = G.players.reduce((m, p) => Math.max(m, p.streak || 0), 0);
-  if (best >= 2) {
-    gradText('×' + best, W - u * 0.05, u * 0.24, Math.round(u * 0.15), PINK, ORANGE);
-    const fs = Math.round(u * 0.02); ctx.font = `900 ${fs}px ${FONT_KO}`; const tw = ctx.measureText('콤보!').width + fs * 1.6;
-    glassBox(W - u * 0.05 - tw, u * 0.34, tw, fs * 1.9, fs, 0.95);
-    txt('콤보!', W - u * 0.05 - tw / 2, u * 0.34 + fs * 0.95, fs, { color: PINK });
-  }
-  // 하단 코칭 필
-  const t0 = (G.cur && !G.cur.done) ? G.cur : null;
-  if (t0) {
-    const fs = Math.round(u * 0.06); ctx.font = `900 ${fs}px ${FONT_KO}`;
-    const label = t0.name || KIND[t0.steps[0]].voice, tw = ctx.measureText(label + ' !').width + fs * 1.6;
-    const x = W / 2 - tw / 2, y = H - u * 0.055 - fs;
-    glassBox(x, y, tw, fs * 1.55, fs * 0.78, 0.86);
-    txt(label, W / 2 - fs * 0.3, y + fs * 0.8, fs, { color: INK });
-    txt('!', W / 2 + ctx.measureText(label).width / 2 + fs * 0.1, y + fs * 0.8, fs, { color: KIND[t0.steps[t0.steps.length - 1]].color });
-  }
-}
-
-function drawResult() {
-  const u = U();
-  ctx.fillStyle = 'rgba(247,248,252,0.6)'; ctx.fillRect(0, 0, W, H);
-  const pw = Math.min(W * 0.72, u * 1.3), ph = u * 0.62, px = W / 2 - pw / 2, py = H / 2 - ph / 2;
-  glassBox(px, py, pw, ph, 32, 0.86);
-  txt('잘했어요!', W / 2, py + ph * 0.17, Math.round(u * 0.08), { color: INK });
-  const n = G.players.length, colW = pw / Math.max(n, 1);
-  G.players.forEach((p, i) => {
-    const x = px + colW * (i + 0.5), s = stars(p);
-    ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(x, py + ph * 0.36, u * 0.016, 0, Math.PI * 2); ctx.fill();
-    for (let k = 0; k < 3; k++) {
-      const hx = x + (k - 1) * u * 0.075, hy = py + ph * 0.52, rr = u * 0.028;
-      if (k < s) { const g = ctx.createRadialGradient(hx - rr * 0.3, hy - rr * 0.3, 1, hx, hy, rr); g.addColorStop(0, '#fff6c8'); g.addColorStop(1, '#ffb347'); shadow('rgba(255,179,71,0.5)', 16, 6); ctx.fillStyle = g; }
-      else { ctx.fillStyle = '#eceff6'; }
-      ctx.beginPath(); ctx.arc(hx, hy, rr, 0, Math.PI * 2); ctx.fill(); noShadow();
-    }
-    txt(p.score, x, py + ph * 0.72, Math.round(u * 0.075), { font: FONT_NUM, color: INK });
-    txt(`${p.hits} / ${p.shown}`, x, py + ph * 0.84, Math.round(u * 0.02), { font: FONT_NUM, color: INK3, weight: 800 });
-  });
-  const left = Math.ceil((G.resultAt + 8000 - G.now) / 1000);
-  txt(`${left}초 후 다음 조`, W / 2, py + ph + u * 0.05, Math.round(u * 0.022), { color: INK3, weight: 800 });
-}
-
-/* ── 메인 루프 ──────────────────────────────────────────── */
-let lastTickSec = -1;
-function loop(ts) {
-  G.now = ts;
-  try { syncPlayers(); } catch (e) { console.error('[인식 오류]', e); }
-  if (G.state === 'play') {
-    try { updateTargets(); } catch (e) { console.error('[판정 오류]', e); }
-    const c = COURSES[G.course];
-    if (c.seq) {
-      if (G.seqIndex >= c.seq.length && !G.cur) endRound();
-    } else {
-      const left = (G.tEnd - G.now) / 1000;
-      const sec = Math.ceil(left);
-      if (sec <= 5 && sec !== lastTickSec && sec > 0) { lastTickSec = sec; sfx.tick(); }
-      if (left <= 0) endRound();
-    }
-  } else if (G.state === 'attract' && G.armed && G.mode === 'camera' && G.players.length) {
-    startRound();
-  } else if (G.state === 'result' && G.now - G.resultAt > 8000) {
-    G.state = 'attract';
-  }
-  try { syncScreens(); } catch (e) { console.error('[화면 오류]', e); }
-  try { draw(); } catch (e) { console.error('[그리기 오류]', e); }
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
-
-/* 처음엔 아무것도 혼자 시작하지 않는다. 카메라 켜기를 누르면 시작. */
-</script>
+<noscript><p class="noscript">이 게임은 자바스크립트가 필요해요.</p></noscript>
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
