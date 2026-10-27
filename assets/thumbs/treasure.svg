@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 290">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4b2f9a"/><stop offset="1" stop-color="#8f63e8"/></linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".55" r=".5"><stop offset="0" stop-color="#fff6b0" stop-opacity=".95"/><stop offset="1" stop-color="#fff6b0" stop-opacity="0"/></radialGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c98a4b"/><stop offset="1" stop-color="#8a5a2b"/></linearGradient>
+  </defs>
+  <rect width="520" height="290" fill="url(#bg)"/>
+  <g fill="#fff" opacity=".7"><circle cx="40" cy="40" r="2"/><circle cx="120" cy="22" r="1.5"/><circle cx="470" cy="30" r="2"/><circle cx="400" cy="70" r="1.5"/><circle cx="200" cy="50" r="1.2"/></g>
+  <rect y="230" width="520" height="60" fill="#5a3d8f"/>
+  <ellipse cx="260" cy="170" rx="170" ry="110" fill="url(#glow)"/>
+  <g transform="translate(200 140)">
+    <path d="M0 40 H120 V100 H0Z" fill="url(#wood)" stroke="#5b3a1a" stroke-width="5"/>
+    <path d="M-4 40 Q60 -10 124 40Z" fill="#d79a55" stroke="#5b3a1a" stroke-width="5"/>
+    <rect x="50" y="48" width="20" height="26" rx="4" fill="#ffd400" stroke="#5b3a1a" stroke-width="4"/>
+    <g font-size="30" text-anchor="middle" font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif"><text x="30" y="30">💎</text><text x="88" y="24">🪙</text><text x="60" y="8">💎</text></g>
+  </g>
+  <g stroke-width="16" stroke-linecap="round" fill="none">
+    <path d="M30 250 Q70 230 110 252" stroke="#ffd400"/><path d="M130 262 Q170 242 210 264" stroke="#1fa8ff"/>
+    <path d="M310 262 Q350 242 390 264" stroke="#ff4f5e"/><path d="M410 250 Q450 230 490 252" stroke="#4cc46a"/>
+  </g>
+  <g font-size="44" text-anchor="middle" font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif"><text x="70" y="120">⬅️</text><text x="450" y="120">➡️</text></g>
+  <rect x="160" y="28" width="200" height="54" rx="27" fill="#ffd400" stroke="#2c1f6b" stroke-width="5"/>
+  <rect x="190" y="47" width="140" height="16" rx="8" fill="#2c1f6b" opacity=".85"/>
+</svg>

@@ -5,15 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>태권 플레이존</title>
 <meta name="description" content="웹캠 앞에서 세 명이 동시에 움직이며 즐기는 어린이 태권도 놀이 게임 10종">
-<meta name="theme-color" content="#2c2a6b">
+<meta name="theme-color" content="#6a3df5">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@500;700;900&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
-<a class="skip" href="#gameGrid">게임 고르기로 바로 가기</a>
+<a class="skip" href="#games">게임 고르기로 바로 가기</a>
 
 <!-- 카메라 영상: 이 브라우저 안에서만 쓰고 어디에도 보내지 않는다 -->
 <video id="cam" playsinline muted aria-hidden="true"></video>
@@ -21,52 +22,78 @@
 <!-- ───────── 메인 화면 ───────── -->
 <main id="home" class="screen on">
   <header class="topbar">
-    <div class="brand"><span class="brand-ic" aria-hidden="true">🥋</span><h1>태권 플레이존</h1></div>
-    <button id="camPill" class="cam-pill" data-status="off" type="button" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="camText">카메라 꺼짐</span></button>
-    <div class="tools">
-      <button class="icon-btn" id="hSound" type="button" aria-pressed="true" aria-label="소리 켜기/끄기">🔊</button>
-      <button class="icon-btn" id="hFull" type="button" aria-label="전체 화면">⛶</button>
-      <button class="icon-btn" id="hSettings" type="button" aria-label="설정">⚙️</button>
+    <a class="brand" href="#top" aria-label="태권 플레이존 처음으로">
+      <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
+        <defs><linearGradient id="lgA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b3df5"/><stop offset="1" stop-color="#9b5cff"/></linearGradient>
+        <linearGradient id="lgB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9a3d"/><stop offset="1" stop-color="#ff3d6e"/></linearGradient></defs>
+        <circle cx="13" cy="9" r="6" fill="url(#lgB)"/>
+        <path d="M5 21 Q14 15 24 19 L40 9 Q45 7 45 12 Q44 15 40 17 L28 26 L30 41 Q30 46 25 45 Q22 44 22 40 L19 29 L9 27 Q3 26 5 21Z" fill="url(#lgA)"/>
+        <circle cx="38" cy="33" r="5" fill="#ffc400"/>
+      </svg>
+      <h1>태권 플레이존</h1>
+    </a>
+    <nav class="nav" aria-label="메인 메뉴"><a href="#games">게임 고르기</a><a href="#howto">이용 방법</a></nav>
+    <div class="top-right">
+      <button id="camPill" class="cam-pill" data-status="off" type="button" aria-live="polite">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z" fill="currentColor"/><circle cx="12" cy="13" r="3.6" fill="#f1effa"/></svg>
+        <span id="camText">카메라 연결 전</span><span class="dot" aria-hidden="true"></span>
+      </button>
+      <div class="tools">
+        <button class="icon-btn ghost" id="hSound" type="button" aria-pressed="true" aria-label="소리 켜기/끄기">🔊</button>
+        <button class="icon-btn ghost" id="hFull" type="button" aria-label="전체 화면">⛶</button>
+        <button class="icon-btn ghost" id="hSettings" type="button" aria-label="설정">⚙️</button>
+      </div>
     </div>
   </header>
 
-  <section class="hero">
+  <section class="hero" id="top">
     <div class="hero-text">
-      <p class="eyebrow">3인 동시 플레이 · 협동 태권 놀이</p>
-      <h2>셋이 <em>동시에</em> 움직이면<br>게임이 시작돼요!</h2>
-      <ol class="steps">
-        <li><b>1</b> 카메라 앞 왼쪽·가운데·오른쪽에 한 명씩 서요</li>
-        <li><b>2</b> 세 명을 한꺼번에 알아보고 각자 점수를 모아요</li>
-        <li><b>3</b> 지르기·발차기로 함께 팀 목표를 달성해요</li>
-      </ol>
+      <p class="eyebrow"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3.5"/><circle cx="16.5" cy="8" r="3.5"/><path d="M1.5 19c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6v1h-13zM12.5 13.6c1.1-.4 2.5-.6 4-.6 3.6 0 6 2.4 6 6v1h-6.6v-1c0-2.2-1.2-4.1-3.4-5.4z"/></svg>태권도 모션 게임 · 3인 협동</p>
+      <h2 class="headline">셋이 함께 움직이면<br><span class="g-purple">도장</span>이 <span class="g-orange">게임장</span>이 돼요!</h2>
+      <p class="lead">웹캠 앞에 나란히 서서 지르기, 발차기, 피하기!<br>세 친구의 움직임이 한 팀의 점수로 이어져요.</p>
       <div class="hero-actions">
-        <button id="startBtn" class="btn huge primary" type="button">함께 시작하기 ▶</button>
-        <button id="demoBtn" class="btn" type="button">카메라 없이 체험</button>
+        <button id="startBtn" class="cta" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z" fill="currentColor"/></svg>함께 시작하기</button>
+        <button id="demoBtn" class="cta ghost" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C6.5 5 2.7 9.4 1.6 11.4a1.3 1.3 0 0 0 0 1.2C2.7 14.6 6.5 19 12 19s9.3-4.4 10.4-6.4a1.3 1.3 0 0 0 0-1.2C21.3 9.4 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>카메라 없이 둘러보기</button>
       </div>
+      <ul class="features">
+        <li><span class="fi green" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="4"/><path d="M4 21c0-4.4 3.6-7.5 8-7.5s8 3.1 8 7.5z"/></svg></span>3인 협동 플레이</li>
+        <li><span class="fi red" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="15" cy="4" r="2.6"/><path d="M13.6 8.2 9 9.6 6.4 13a1.2 1.2 0 1 0 2 1.4l2-2.6 1.7-.5-1.6 4.6-3.8 3.2a1.3 1.3 0 1 0 1.7 2l4-3.4 2.6 3.5a1.3 1.3 0 0 0 2.1-1.6l-2.9-3.9 1.4-4.2 1.6 1.7 3.4.4a1.2 1.2 0 0 0 .3-2.4l-2.6-.3-2.6-2.8a2 2 0 0 0-1.5-.6z"/></svg></span>온몸으로 즐기는 게임</li>
+        <li><span class="fi yellow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2.6 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"/></svg></span>우리 도장이 게임장으로!</li>
+      </ul>
       <p id="modeLine" class="mode-line" aria-live="polite"></p>
     </div>
-    <figure class="preview" aria-label="카메라 미리보기와 세 사람 자리 안내">
-      <canvas id="preview" width="640" height="360"></canvas>
-      <div id="previewEmpty" class="preview-empty">
-        <div class="trio" aria-hidden="true"><span class="p1">1</span><span class="p2">2</span><span class="p3">3</span></div>
-        <p>카메라를 켜면 여기에서<br>세 친구가 동시에 보여요</p>
-      </div>
-      <figcaption id="previewCap">플레이어 1·2·3은 순서를 기다리지 않고 동시에 함께 해요</figcaption>
+    <figure class="hero-art" aria-label="세 어린이가 함께 태권도 동작을 하는 그림. 카메라를 켜면 실제 카메라 화면과 세 사람 자리가 보여요">
+      <canvas id="preview" width="960" height="540" aria-hidden="true"></canvas>
+      <img id="previewEmpty" src="assets/hero.jpg" alt="" width="780" height="506" fetchpriority="high">
+      <span id="liveBadge" class="live-badge" data-on="false"><i aria-hidden="true"></i><b>LIVE</b><span id="previewCap">카메라 연결 전</span></span>
     </figure>
   </section>
 
-  <section class="games" aria-labelledby="gamesTitle">
-    <div class="games-head">
-      <h2 id="gamesTitle">게임 고르기</h2>
-      <p>카드를 누르면 바로 시작해요 · 모든 게임 3명 동시 · 협동</p>
+  <section class="games" id="games" aria-labelledby="gamesTitle">
+    <div class="sec-head">
+      <h2 id="gamesTitle"><span class="tick l" aria-hidden="true"></span>오늘은 어떤 게임을 할까요?<span class="tick r" aria-hidden="true"></span></h2>
+      <p>세 명이 동시에 참여하는 협동 콘텐츠 · 카드를 누르면 바로 시작해요</p>
     </div>
     <div id="gameGrid" class="grid"></div>
   </section>
 
-  <footer class="foot">
-    <p>🔒 카메라 영상은 이 기기의 브라우저 안에서만 처리돼요. 저장하거나 서버로 보내지 않아요.</p>
-    <p>키보드: 1번 <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd>·<kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / 2번 <kbd>U</kbd><kbd>I</kbd><kbd>O</kbd>·<kbd>J</kbd><kbd>K</kbd><kbd>L</kbd> / 3번 <kbd>7</kbd><kbd>8</kbd><kbd>9</kbd>·<kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> (자세한 건 ⚙️ 설정)</p>
-  </footer>
+  <section class="howto" id="howto" aria-labelledby="howtoTitle">
+    <div class="sec-head">
+      <h2 id="howtoTitle"><span class="tick l" aria-hidden="true"></span>이렇게 놀아요<span class="tick r" aria-hidden="true"></span></h2>
+      <p>준비물은 웹캠 하나와 넓은 공간이면 충분해요</p>
+    </div>
+    <ol class="how-steps">
+      <li><span class="hs-no">1</span><span class="hs-ic" aria-hidden="true">📷</span><h3>카메라 앞에 나란히</h3><p>TV 위 웹캠 앞 2~3m 거리에 왼쪽·가운데·오른쪽 한 명씩, 머리부터 발끝까지 보이게 서요.</p></li>
+      <li><span class="hs-no">2</span><span class="hs-ic" aria-hidden="true">🙌</span><h3>함께 시작하기</h3><p>안내를 읽고 카메라를 허락해요. 게임 화면에서 세 명이 모두 만세를 하면 바로 시작!</p></li>
+      <li><span class="hs-no">3</span><span class="hs-ic" aria-hidden="true">🏆</span><h3>셋이 한 팀으로</h3><p>지르기·발차기·피하기로 각자 점수를 모아 팀 목표를 달성해요. 탈락은 없어요.</p></li>
+    </ol>
+    <div class="how-notes">
+      <div class="note"><h3>🛡️ 안전 &amp; 개인정보</h3><p>친구와 팔을 벌려도 닿지 않게 떨어져 서고, 미끄럽지 않은 바닥에서 어른과 함께 해요. 카메라 영상은 이 기기의 브라우저 안에서만 처리되고, 저장하거나 서버로 보내지 않아요.</p></div>
+      <div class="note"><h3>⌨️ 카메라가 없어도 괜찮아요</h3><p>키보드로 세 명이 동시에! 1번 <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd> <kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · 2번 <kbd>U</kbd><kbd>I</kbd><kbd>O</kbd> <kbd>J</kbd><kbd>K</kbd><kbd>L</kbd> · 3번 <kbd>7</kbd><kbd>8</kbd><kbd>9</kbd> <kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd>. 터치 버튼과 자동 데모도 있어요. 자세한 키는 ⚙️ 설정에서.</p></div>
+    </div>
+  </section>
+
+  <footer class="foot"><span>태권 플레이존</span><span>웹캠 3인 동시 협동 태권 놀이 · 영상은 기기 밖으로 나가지 않아요</span></footer>
 </main>
 
 <!-- ───────── 게임 화면 ───────── -->

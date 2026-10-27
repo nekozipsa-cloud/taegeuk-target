@@ -24,14 +24,31 @@ function toast(msg, ms = 3500) {
 }
 
 /* ── 게임 카드 ── */
+// 카드용 짧은 설명과 특징 태그 (게임 규칙은 각 게임 파일에)
+const CARD = {
+  zombie: { img: 'zombie.jpg', text: '몰려오는 좀비를 함께 물리쳐요!', tags: [['🎮', '협동 격파'], ['📊', '활발한 움직임']] },
+  balloon: { img: 'balloon.jpg', text: '하늘로 떠오르는 풍선을 터뜨려요!', tags: [['🎈', '정확한 타격'], ['📊', '리듬감']] },
+  goalkeeper: { img: 'goalkeeper.jpg', text: '날아오는 공을 발차기로 막아요!', tags: [['🛡️', '반응 속도'], ['📊', '순발력']] },
+  mimic: { img: 'mimic.jpg', text: '화면의 동작을 보고 함께 따라 해요!', tags: [['👥', '집중력'], ['📊', '동작 인식']] },
+  island: { img: 'island.jpg', text: '흔들리는 섬에서 균형을 지켜요!', tags: [['🌿', '균형감각'], ['📊', '코어 근력']] },
+  runner: { img: 'runner.svg', text: '숙이고 피하고 차면서 달려요!', tags: [['⚡', '민첩성'], ['📊', '전신 운동']] },
+  treasure: { img: 'treasure.svg', text: '띠 색깔 신호에 맞춰 보물을 찾아요!', tags: [['🎨', '색 구별'], ['🧠', '판단력']] },
+  tiger: { img: 'tiger.svg', text: '호랑이 발자국 순서를 함께 기억해요!', tags: [['🧠', '기억력'], ['👥', '팀워크']] },
+  combo: { img: 'combo.svg', text: '지르기·막기·발차기로 콤보를 이어요!', tags: [['🎵', '리듬감'], ['🔥', '연속 동작']] },
+  teambattle: { img: 'teambattle.jpg', text: '셋이 힘을 모아 격파왕을 이겨요!', tags: [['🤝', '팀워크'], ['💪', '체력']] },
+};
+
 function renderGrid() {
-  $('gameGrid').innerHTML = GAMES.map((d, n) => `
+  $('gameGrid').innerHTML = GAMES.map((d, n) => {
+    const c = CARD[d.id] || { text: d.tagline, tags: [] };
+    return `
     <button class="gcard" type="button" data-id="${d.id}" style="--c:${d.color}" aria-label="${n + 1}번 ${d.title}: ${d.tagline}">
-      <span class="gc-art"><span class="gc-no">${n + 1}</span><span aria-hidden="true">${d.icon}</span></span>
+      <span class="gc-art">${c.img ? `<img src="assets/thumbs/${c.img}" alt="" loading="lazy" width="255" height="142">` : ''}<span class="gc-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z" fill="currentColor"/></svg></span></span>
       <h3>${d.title}</h3>
-      <p>${d.tagline}</p>
-      <span class="chips">${d.moves.slice(0, 4).map((m) => `<span class="chip">${MOVE_INFO[m].icon} ${MOVE_INFO[m].label}</span>`).join('')}</span>
-    </button>`).join('');
+      <p>${c.text}</p>
+      <span class="chips">${c.tags.map(([ic, t]) => `<span class="chip"><i aria-hidden="true">${ic}</i>${t}</span>`).join('')}</span>
+    </button>`;
+  }).join('');
   $('gameGrid').addEventListener('click', (e) => {
     const b = e.target.closest('.gcard'); if (!b) return;
     begin(GAMES.find((g) => g.id === b.dataset.id));
@@ -85,20 +102,24 @@ function refreshMode() {
   let status = s, label;
   if (s === 'on') {
     const n = players.filter((p) => p.status === 'ok' || p.status === 'unstable').length;
-    label = `카메라 켜짐 · ${n}/3명 보여요`;
+    label = `카메라 연결됨 · ${n}/3명`;
   } else if (s === 'asking') label = '카메라 허용을 기다려요…';
   else if (s === 'loading') label = '동작 인식 준비 중… (처음엔 10초쯤)';
-  else if (s === 'error') label = '카메라 사용 불가 · 눌러서 다시';
-  else if (input.mode === 'demo') { status = 'demo'; label = '데모 모드 · 카메라 꺼짐'; }
+  else if (s === 'error') label = '카메라 사용 불가';
+  else if (input.mode === 'demo') { status = 'demo'; label = '데모 모드'; }
   else if (input.mode === 'keys') { status = 'keys'; label = '키보드·터치 모드'; }
-  else label = '카메라 꺼짐 · 눌러서 켜기';
+  else label = '카메라 연결 전';
   pill.dataset.status = status;
   if (txt.textContent !== label) txt.textContent = label;
   document.body.classList.toggle('cam-on', s === 'on' && input.mode === 'camera');
   document.body.classList.toggle('mirror', !!settings.mirror);
   document.body.classList.toggle('reduce', !!settings.reduceMotion);
   document.body.classList.toggle('pads', !!settings.touchPads || input.mode === 'keys' && matchMedia('(pointer: coarse)').matches);
-  $('previewEmpty').hidden = s === 'on' && input.mode === 'camera';
+  const live = s === 'on' && input.mode === 'camera';
+  $('previewEmpty').hidden = live;
+  $('liveBadge').dataset.on = String(live);
+  const cap = live ? '카메라 인식 중' : s === 'loading' || s === 'asking' ? '카메라 준비 중…' : '카메라 연결 전';
+  if ($('previewCap').textContent !== cap) $('previewCap').textContent = cap;
   const ml = $('modeLine');
   const line = input.mode === 'camera' ? (s === 'on' ? '📷 카메라 모드: 세 명이 동시에 인식돼요' : '📷 카메라를 준비하고 있어요')
     : input.mode === 'demo' ? '🤖 데모 모드: 자동 도우미가 대신 움직여요 (키보드로 끼어들 수 있어요)'
