@@ -25,12 +25,13 @@ function toast(msg, ms = 3500) {
 
 /* ── 게임 카드 ── */
 // 카드용 짧은 설명과 특징 태그 (게임 규칙은 각 게임 파일에)
+// badge: 번호 배지 색. 6~10번 썸네일은 번호가 그림에 들어 있어 배지가 없다
 const CARD = {
-  zombie: { img: 'zombie.jpg', text: '몰려오는 좀비를 함께 물리쳐요!', tags: [['🎮', '협동 격파'], ['📊', '활발한 움직임']] },
-  balloon: { img: 'balloon.jpg', text: '하늘로 떠오르는 풍선을 터뜨려요!', tags: [['🎈', '정확한 타격'], ['📊', '리듬감']] },
-  goalkeeper: { img: 'goalkeeper.jpg', text: '날아오는 공을 발차기로 막아요!', tags: [['🛡️', '반응 속도'], ['📊', '순발력']] },
-  mimic: { img: 'mimic.jpg', text: '화면의 동작을 보고 함께 따라 해요!', tags: [['👥', '집중력'], ['📊', '동작 인식']] },
-  island: { img: 'island.jpg', text: '흔들리는 섬에서 균형을 지켜요!', tags: [['🌿', '균형감각'], ['📊', '코어 근력']] },
+  zombie: { img: 'zombie.jpg', badge: '#5a2db8', text: '몰려오는 좀비를 함께 물리쳐요!', tags: [['🎮', '협동 격파'], ['📊', '활발한 움직임']] },
+  balloon: { img: 'balloon.jpg', badge: '#1f6fd1', text: '하늘로 떠오르는 풍선을 터뜨려요!', tags: [['🎈', '정확한 타격'], ['📊', '리듬감']] },
+  goalkeeper: { img: 'goalkeeper.jpg', badge: '#c0322a', text: '날아오는 공을 발차기로 막아요!', tags: [['🛡️', '반응 속도'], ['📊', '순발력']] },
+  mimic: { img: 'mimic.jpg', badge: '#7a2fd0', text: '화면의 동작을 보고 함께 따라 해요!', tags: [['👥', '집중력'], ['📊', '동작 인식']] },
+  island: { img: 'island.jpg', badge: '#0f8a9a', text: '흔들리는 섬에서 균형을 지켜요!', tags: [['🌿', '균형감각'], ['📊', '코어 근력']] },
   runner: { img: 'runner.jpg', text: '숙이고 피하고 차면서 달려요!', tags: [['⚡', '민첩성'], ['📊', '전신 운동']] },
   treasure: { img: 'treasure.jpg', text: '띠 색깔 신호에 맞춰 보물을 찾아요!', tags: [['🎨', '색 구별'], ['🧠', '판단력']] },
   tiger: { img: 'tiger.jpg', text: '호랑이 발자국 순서를 함께 기억해요!', tags: [['🧠', '기억력'], ['👥', '팀워크']] },
@@ -43,7 +44,7 @@ function renderGrid() {
     const c = CARD[d.id] || { text: d.tagline, tags: [] };
     return `
     <button class="gcard" type="button" data-id="${d.id}" style="--c:${d.color}" aria-label="${n + 1}번 ${d.title}: ${d.tagline}">
-      <span class="gc-art">${c.img ? `<img src="assets/thumbs/${c.img}" alt="" loading="lazy" width="255" height="142">` : ''}<span class="gc-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z" fill="currentColor"/></svg></span></span>
+      <span class="gc-art">${c.img ? `<img src="assets/thumbs/${c.img}" alt="" loading="lazy" width="255" height="142">` : ''}${c.badge ? `<span class="gc-no" style="--b:${c.badge}" aria-hidden="true">${n + 1}</span>` : ''}<span class="gc-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z" fill="currentColor"/></svg></span></span>
       <h3>${d.title}</h3>
       <p>${c.text}</p>
       <span class="chips">${c.tags.map(([ic, t]) => `<span class="chip"><i aria-hidden="true">${ic}</i>${t}</span>`).join('')}</span>
