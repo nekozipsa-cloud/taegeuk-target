@@ -3,6 +3,7 @@
  *
  * 게임 정의(js/games/*.js)의 모양:
  *   { id, title, icon, color, tagline, howto: [..], moves: ['punch',..], goal, goalUnit,
+ *     skeleton?: false (카메라 화면에 몸 선을 그리지 않음),
  *     create(ctx) → { update(dt), draw(g), drawBg?(g), onAction?(i, ev), bot?(i) } }
  *   bot(i)는 데모 모드에서 i번 도우미가 할 동작: { type, dir } 또는 { hold, ms, value } 또는 null
  */
@@ -292,7 +293,7 @@ export class Runner {
   drawPlayers(g, now) {
     const camOn = input.mode === 'camera';
     for (const p of players) {
-      if (camOn && p.body && now - p.lastSeen < 400) drawSkeleton(g, p);
+      if (camOn && p.body && now - p.lastSeen < 400) drawSkeleton(g, p, this.def.skeleton !== false);
       else if (p.joints && p.present) drawAvatar(g, p, now);
     }
   }
@@ -345,17 +346,20 @@ export class Runner {
 
 /* ── 사람 그리기 ── */
 const BONES = [['ls', 'rs'], ['ls', 'le'], ['le', 'lw'], ['rs', 're'], ['re', 'rw'], ['ls', 'lh'], ['rs', 'rh'], ['lh', 'rh'], ['lh', 'lk'], ['lk', 'la'], ['rh', 'rk'], ['rk', 'ra']];
-function drawSkeleton(g, p) {
+/* lines=false: 몸 선·관절 점 없이 머리 위 번호만 (게임 정의의 skeleton: false) */
+function drawSkeleton(g, p, lines = true) {
   const b = p.body, lw = Math.max(5, b.T * 0.09);
-  g.lineCap = 'round';
-  for (const pass of [0, 1]) {
-    g.strokeStyle = pass ? p.color : 'rgba(255,255,255,0.9)';
-    g.lineWidth = pass ? lw : lw + 6;
-    g.beginPath();
-    for (const [a, c] of BONES) { g.moveTo(b[a].x, b[a].y); g.lineTo(b[c].x, b[c].y); }
-    g.stroke();
+  if (lines) {
+    g.lineCap = 'round';
+    for (const pass of [0, 1]) {
+      g.strokeStyle = pass ? p.color : 'rgba(255,255,255,0.9)';
+      g.lineWidth = pass ? lw : lw + 6;
+      g.beginPath();
+      for (const [a, c] of BONES) { g.moveTo(b[a].x, b[a].y); g.lineTo(b[c].x, b[c].y); }
+      g.stroke();
+    }
+    for (const w of [b.lw, b.rw, b.la, b.ra]) { g.fillStyle = p.color; g.beginPath(); g.arc(w.x, w.y, lw * 1.4, 0, Math.PI * 2); g.fill(); }
   }
-  for (const w of [b.lw, b.rw, b.la, b.ra]) { g.fillStyle = p.color; g.beginPath(); g.arc(w.x, w.y, lw * 1.4, 0, Math.PI * 2); g.fill(); }
   const r = Math.max(18, b.T * 0.28);
   const hx = b.nose.x, hy = b.nose.y - b.T * 0.75;
   g.fillStyle = p.color; g.beginPath(); g.arc(hx, hy, r, 0, Math.PI * 2); g.fill();

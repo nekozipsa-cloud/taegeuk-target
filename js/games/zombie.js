@@ -1,12 +1,14 @@
-/* 1. 좀비 격퇴 — 자기 칸으로 다가오는 귀여운 좀비를 지르기(키 큰 좀비)·앞차기(꼬마 좀비)로 물리친다 */
+/* 1. 좀비 격퇴 — 자기 칸으로 다가오는 귀여운 좀비를 지르기(키 큰 좀비)·앞차기(꼬마 좀비)로 물리친다.
+ * 카메라: 꼬마 좀비는 발이 과녁에 닿아야만 맞는다 (무릎만 드는 동작은 인정하지 않음). 몸 선은 그리지 않는다. */
 
 const HIT_FROM = 0.4;   // 이만큼 다가와야 맞힐 수 있음 (0=멀리, 1=코앞)
 
 export default {
   id: 'zombie', title: '좀비 격퇴', icon: '🧟', color: '#4cc46a',
   tagline: '아장아장 다가오는 귀여운 좀비를 지르기·앞차기로 물리쳐요',
-  howto: ['내 칸으로 오는 좀비를 내가 맡아요', '키 큰 좀비(가슴에 과녁) → 지르기', '꼬마 좀비(발밑에 과녁) → 앞차기', '세 명이 동시에 맞히면 합동 공격 보너스!'],
+  howto: ['내 칸으로 오는 좀비를 내가 맡아요', '키 큰 좀비(가슴에 과녁) → 지르기', '꼬마 좀비(발밑에 과녁) → 발로 과녁을 뻥!', '세 명이 동시에 맞히면 합동 공격 보너스!'],
   moves: ['punch', 'kick'], goal: 40, goalUnit: '좀비',
+  skeleton: false,
   create: (ctx) => new Zombie(ctx),
 };
 
@@ -38,7 +40,7 @@ class Zombie {
       z.age += dt;
       if (z.done) { z.doneAge += dt; continue; }
       z.q += z.speed * dt;
-      // 카메라: 손·발로 직접 맞혀도 된다
+      // 카메라: 손·발로 직접 맞힌다 (꼬마 좀비는 발로만)
       if (ctx.camera && z.q > HIT_FROM) {
         const b = this.box(z);
         const limb = ctx.touch(z.lane, b.tx, b.ty, b.tr, { hands: z.kind === 'tall', feet: z.kind === 'tiny', minSpeed: 1.6 });
@@ -67,6 +69,8 @@ class Zombie {
 
   onAction(i, ev) {
     if (ev.type !== 'punch' && ev.type !== 'kick') return;
+    // 카메라 발차기는 동작만으로 맞히지 않는다: 발이 과녁에 닿아야 함 (update의 touch)
+    if (ev.type === 'kick' && ev.src === 'camera') return;
     const want = ev.type === 'punch' ? 'tall' : 'tiny';
     const z = this.front(i, want);
     if (z) return this.hit(z, i);

@@ -8,15 +8,16 @@
  * 아이 키가 크든 작든 같은 비율로 판정한다.
  */
 
-const IDX = { nose: 0, ls: 11, rs: 12, le: 13, re: 14, lw: 15, rw: 16, lh: 23, rh: 24, lk: 25, rk: 26, la: 27, ra: 28 };
+const IDX = { nose: 0, ls: 11, rs: 12, le: 13, re: 14, lw: 15, rw: 16, lh: 23, rh: 24, lk: 25, rk: 26, la: 27, ra: 28, lhe: 29, rhe: 30, lt: 31, rt: 32 };
 
 const vis = (p) => (p && p.visibility != null ? p.visibility : 1);
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+const foot = (a, h, t) => ({ x: (a.x + h.x + t.x) / 3, y: (a.y + h.y + t.y) / 3, v: Math.min(a.v, t.v) });
 
 /* MediaPipe 랜드마크 33개 → 화면 좌표 몸 정보. 어깨·엉덩이가 안 보이면 null */
 export function bodyFrom(lm, toScreen) {
-  if (!lm || lm.length < 29) return null;
+  if (!lm || lm.length < 33) return null;
   const upperVis = Math.min(vis(lm[11]), vis(lm[12]));
   const hipVis = Math.min(vis(lm[23]), vis(lm[24]));
   if (upperVis < 0.5 || hipVis < 0.35) return null;
@@ -31,6 +32,8 @@ export function bodyFrom(lm, toScreen) {
     cy: (sh.y + hip.y) / 2,
     wrists: [P.lw, P.rw],
     ankles: [P.la, P.ra],
+    // 발: 발목·뒤꿈치·발끝의 가운데 (무릎이나 정강이가 아닌 발 자체로 맞히는 판정용)
+    feet: [foot(P.la, P.lhe, P.lt), foot(P.ra, P.rhe, P.rt)],
     knees: [P.lk, P.rk],
     quality: (upperVis + hipVis + Math.min(vis(lm[15]), vis(lm[16])) + Math.min(vis(lm[27]), vis(lm[28]))) / 4,
     feetVisible: Math.min(vis(lm[27]), vis(lm[28])) > 0.45,

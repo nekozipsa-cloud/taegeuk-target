@@ -155,7 +155,7 @@ export function updateInput(now, W, H) {
       const b = p.body;
       p.x = b.cx; p.y = b.cy; p.T = p.det.baseT || b.T;
       p.hands = b.wrists.map((w, k) => ({ x: w.x, y: w.y, v: p.det.speed.hands[k] || 0 }));
-      p.feet = b.ankles.map((a, k) => ({ x: a.x, y: a.y, v: p.det.speed.feet[k] || 0 }));
+      p.feet = (b.feet || b.ankles).map((f, k) => ({ x: f.x, y: f.y, v: p.det.speed.feet[k] || 0 }));
       p.head = { x: b.nose.x, y: b.nose.y };
       p.joints = null;
     } else {
