@@ -5,9 +5,9 @@
  *   players[i].events    이번 프레임의 동작 [{ type, dir, x, y, src }]
  *   players[i].hands/feet  손·발 화면 위치와 속도(몸통 길이/초) — 표적 맞히기 판정용
  */
-import { PLAYER_COLORS, PLAYER_SOFT, PLAYER_NAMES, PLAYER_COUNT, settings, sensFactor } from './config.js';
-import { cam, detect, makeToScreen } from './pose.js';
-import { bodyFrom, MotionDetector, assignSlots } from './detect.js';
+import { PLAYER_COLORS, PLAYER_SOFT, PLAYER_NAMES, PLAYER_COUNT, settings, sensFactor } from './config.js?v=202611041535';
+import { cam, detect, makeToScreen } from './pose.js?v=202611041535';
+import { bodyFrom, MotionDetector, assignSlots } from './detect.js?v=202611041535';
 
 export const input = {
   mode: 'none',   // camera | keys | demo | none

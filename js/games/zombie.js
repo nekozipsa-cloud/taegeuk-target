@@ -1,13 +1,13 @@
-/* 1. 좀비 격퇴 — 자기 칸으로 다가오는 귀여운 좀비를 지르기(키 큰 좀비)·앞차기(꼬마 좀비)로 물리친다.
- * 카메라: 꼬마 좀비는 발이 과녁에 닿아야만 맞는다 (무릎만 드는 동작은 인정하지 않음). 몸 선은 그리지 않는다. */
+/* 1. 좀비 격퇴 — 자기 칸으로 다가오는 귀여운 좀비를 발차기로 물리친다 (키 큰 좀비는 높게, 꼬마 좀비는 낮게).
+ * 카메라: 발이 과녁에 닿아야만 맞는다. 손·무릎이나 동작 인식만으로는 맞지 않는다. 몸 선은 그리지 않는다. */
 
 const HIT_FROM = 0.4;   // 이만큼 다가와야 맞힐 수 있음 (0=멀리, 1=코앞)
 
 export default {
   id: 'zombie', title: '좀비 격퇴', icon: '🧟', color: '#4cc46a',
-  tagline: '아장아장 다가오는 귀여운 좀비를 지르기·앞차기로 물리쳐요',
-  howto: ['내 칸으로 오는 좀비를 내가 맡아요', '키 큰 좀비(가슴에 과녁) → 지르기', '꼬마 좀비(발밑에 과녁) → 발로 과녁을 뻥!', '세 명이 동시에 맞히면 합동 공격 보너스!'],
-  moves: ['punch', 'kick'], goal: 40, goalUnit: '좀비',
+  tagline: '아장아장 다가오는 귀여운 좀비를 발차기로 물리쳐요',
+  howto: ['내 칸으로 오는 좀비를 내가 맡아요', '좀비 몸의 과녁에 발을 대서 뻥! (손·무릎은 안 돼요)', '키 큰 좀비는 높게, 꼬마 좀비는 낮게 차요', '세 명이 동시에 맞히면 합동 공격 보너스!'],
+  moves: ['kick'], goal: 40, goalUnit: '좀비',
   skeleton: false,
   create: (ctx) => new Zombie(ctx),
 };
@@ -40,10 +40,10 @@ class Zombie {
       z.age += dt;
       if (z.done) { z.doneAge += dt; continue; }
       z.q += z.speed * dt;
-      // 카메라: 손·발로 직접 맞힌다 (꼬마 좀비는 발로만)
+      // 카메라: 발로만 직접 맞힌다
       if (ctx.camera && z.q > HIT_FROM) {
         const b = this.box(z);
-        const limb = ctx.touch(z.lane, b.tx, b.ty, b.tr, { hands: z.kind === 'tall', feet: z.kind === 'tiny', minSpeed: 1.6 });
+        const limb = ctx.touch(z.lane, b.tx, b.ty, b.tr, { hands: false, feet: true, minSpeed: 1.6 });
         if (limb) this.hit(z, z.lane);
       }
       if (z.q >= 1) { z.done = 'sleep'; z.doneAge = 0; this.ctx.fx.text(this.box(z).x, this.box(z).y - 60, '쿨쿨… 괜찮아!', '#cfd6ff', 34); this.ctx.sfx('soft'); }
@@ -58,8 +58,8 @@ class Zombie {
     const x = zone.cx + Math.sin(z.age * 2 + z.wob) * zone.w * 0.08;
     const foot = H * (0.4 + 0.46 * z.q);
     const y = foot - s / 2;
-    // 과녁: 키 큰 좀비는 가슴, 꼬마 좀비는 발밑
-    const ty = z.kind === 'tall' ? foot - s * 0.62 : foot - s * 0.18;
+    // 과녁: 키 큰 좀비는 배(높게 차기), 꼬마 좀비는 발밑(낮게 차기)
+    const ty = z.kind === 'tall' ? foot - s * 0.5 : foot - s * 0.18;
     return { x, y, s, foot, tx: x, ty, tr: s * (z.kind === 'tall' ? 0.28 : 0.4), W };
   }
 
@@ -68,14 +68,10 @@ class Zombie {
   }
 
   onAction(i, ev) {
-    if (ev.type !== 'punch' && ev.type !== 'kick') return;
-    // 카메라 발차기는 동작만으로 맞히지 않는다: 발이 과녁에 닿아야 함 (update의 touch)
-    if (ev.type === 'kick' && ev.src === 'camera') return;
-    const want = ev.type === 'punch' ? 'tall' : 'tiny';
-    const z = this.front(i, want);
-    if (z) return this.hit(z, i);
-    const other = this.front(i);
-    if (other) this.ctx.fx.text(this.box(other).x, this.box(other).y - this.box(other).s * 0.7, other.kind === 'tall' ? '지르기로!' : '앞차기로!', '#fff', 34);
+    // 카메라는 동작 인식으로 맞히지 않는다: 발이 과녁에 닿아야 함 (update의 touch)
+    if (ev.type !== 'kick' || ev.src === 'camera') return;
+    const z = this.front(i);
+    if (z) this.hit(z, i);
   }
 
   hit(z, i) {
@@ -98,8 +94,7 @@ class Zombie {
   bot(i) {
     const z = this.front(i);
     if (!z || Math.random() < 0.2) return null;
-    const right = Math.random() < 0.88;
-    return { type: (z.kind === 'tall') === right ? 'punch' : 'kick' };
+    return { type: 'kick' };
   }
 
   drawBg(g) {
@@ -134,7 +129,7 @@ class Zombie {
         g.lineWidth = 6; g.strokeStyle = '#fff';
         g.fillStyle = z.kind === 'tall' ? 'rgba(255,79,139,0.55)' : 'rgba(31,168,255,0.55)';
         g.beginPath(); g.arc(b.tx, b.ty, b.tr * 0.55 * pulse, 0, Math.PI * 2); g.fill(); g.stroke();
-        this.ctx.emoji(g, z.kind === 'tall' ? '👊' : '🦵', b.tx, b.ty, b.tr * 0.6);
+        this.ctx.emoji(g, '🦶', b.tx, b.ty, b.tr * 0.6);
       }
     }
   }

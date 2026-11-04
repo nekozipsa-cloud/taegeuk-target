@@ -1,5 +1,5 @@
 /* 4. 동작 따라 하기 — 가운데 카드의 자세를 세 명이 함께 따라 하고 버티면 점수 */
-import { MOVE_INFO } from '../config.js';
+import { MOVE_INFO } from '../config.js?v=202611041535';
 
 const POSES = [
   { key: 'armsUp', test: (f) => f.armsUp },
