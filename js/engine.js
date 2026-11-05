@@ -6,10 +6,10 @@
  *     create(ctx) → { update(dt), draw(g), drawBg?(g), onAction?(i, ev), bot?(i) } }
  *   bot(i)는 데모 모드에서 i번 도우미가 할 동작: { type, dir } 또는 { hold, ms, value } 또는 null
  */
-import { settings, MOVE_INFO, PLAYER_COUNT } from './config.js?v=202611051550';
-import { sfx } from './audio.js?v=202611051550';
-import { Fx, outlined, emoji, rnd, pick, clamp, FONT } from './fx.js?v=202611051550';
-import { input, players, botAct, botHold, resetPlayers, KEY_HELP } from './input.js?v=202611051550';
+import { settings, MOVE_INFO, PLAYER_COUNT } from './config.js?v=202611051554';
+import { sfx } from './audio.js?v=202611051554';
+import { Fx, outlined, emoji, rnd, pick, clamp, FONT } from './fx.js?v=202611051554';
+import { input, players, botAct, botHold, resetPlayers, KEY_HELP } from './input.js?v=202611051554';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -292,8 +292,9 @@ export class Runner {
   drawPlayers(g, now) {
     const camOn = input.mode === 'camera';
     for (const p of players) {
-      if (camOn && p.body && now - p.lastSeen < 400) drawBadge(g, p);
-      else if (p.joints && p.present) drawAvatar(g, p, now);
+      // 카메라에 보이는 사람 위에는 아무것도 그리지 않는다 (영상을 가리지 않게)
+      if (camOn && p.body && now - p.lastSeen < 400) continue;
+      if (p.joints && p.present) drawAvatar(g, p, now);
     }
   }
 
@@ -344,15 +345,6 @@ export class Runner {
 }
 
 /* ── 사람 그리기 ── */
-/* 카메라 화면: 몸 선은 그리지 않고 머리 위에 번호만 (영상을 가리지 않게) */
-function drawBadge(g, p) {
-  const b = p.body;
-  const r = Math.max(18, b.T * 0.28);
-  const hx = b.nose.x, hy = b.nose.y - b.T * 0.75;
-  g.fillStyle = p.color; g.beginPath(); g.arc(hx, hy, r, 0, Math.PI * 2); g.fill();
-  g.lineWidth = 4; g.strokeStyle = '#fff'; g.stroke();
-  outlined(g, String(p.i + 1), hx, hy + 2, r * 1.3, '#fff', p.color);
-}
 
 function drawAvatar(g, p, now) {
   const j = p.joints, T = j.T;
