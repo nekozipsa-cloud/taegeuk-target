@@ -1,5 +1,5 @@
 /* 효과음: 파일 없이 WebAudio로 합성한다. 소리 끄기 설정을 따른다. */
-import { settings } from './config.js?v=202611041535';
+import { settings } from './config.js?v=202611051550';
 
 let ac = null;
 function ctx() {

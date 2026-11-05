@@ -1,10 +1,10 @@
 /* 플랫폼 셸: 메인 화면, 카메라 동의·연결, 설정, 키보드·터치, 화면 전환, 메인 루프 */
-import { settings, saveSettings, MOVE_INFO, PLAYER_COUNT } from './config.js?v=202611041535';
-import { sfx, unlockAudio } from './audio.js?v=202611041535';
-import { cam, startCamera, stopCamera, onCamChange } from './pose.js?v=202611041535';
-import { input, players, setMode, updateInput, clearEvents, keyAction, isPlayerKey, press, KEY_HELP, resetPlayers } from './input.js?v=202611041535';
-import { Runner } from './engine.js?v=202611041535';
-import { GAMES } from './games/index.js?v=202611041535';
+import { settings, saveSettings, MOVE_INFO, PLAYER_COUNT } from './config.js?v=202611051550';
+import { sfx, unlockAudio } from './audio.js?v=202611051550';
+import { cam, startCamera, stopCamera, onCamChange } from './pose.js?v=202611051550';
+import { input, players, setMode, updateInput, clearEvents, keyAction, isPlayerKey, press, KEY_HELP, resetPlayers } from './input.js?v=202611051550';
+import { Runner } from './engine.js?v=202611051550';
+import { GAMES } from './games/index.js?v=202611051550';
 
 const $ = (id) => document.getElementById(id);
 const video = $('cam');
@@ -255,7 +255,7 @@ function resize() {
 }
 addEventListener('resize', resize);
 
-/* ── 메인 미리보기: 카메라 화면 + 세 자리 + 인식된 사람 ── */
+/* ── 메인 미리보기: 카메라 화면 + 세 자리 (몸 선은 그리지 않음) ── */
 const pg = preview.getContext('2d');
 preview.width = PW; preview.height = PH;
 function drawPreview() {
@@ -277,14 +277,6 @@ function drawPreview() {
     pg.lineWidth = 6; pg.strokeStyle = '#23214a';
     const t = seen ? `${p.name} 보여요` : `${p.name} 자리`;
     pg.strokeText(t, x + w / 2, 62); pg.fillStyle = seen ? p.color : '#fff'; pg.fillText(t, x + w / 2, 62);
-    if (seen && p.body) {
-      const b = p.body;
-      pg.fillStyle = p.color;
-      for (const q of [b.nose, b.lw, b.rw, b.ls, b.rs, b.lh, b.rh, b.la, b.ra]) { pg.beginPath(); pg.arc(q.x, q.y, 7, 0, Math.PI * 2); pg.fill(); }
-      pg.strokeStyle = p.color; pg.lineWidth = 5;
-      pg.beginPath(); pg.moveTo(b.lw.x, b.lw.y); pg.lineTo(b.ls.x, b.ls.y); pg.lineTo(b.rs.x, b.rs.y); pg.lineTo(b.rw.x, b.rw.y);
-      pg.moveTo(b.la.x, b.la.y); pg.lineTo(b.lh.x, b.lh.y); pg.lineTo(b.rh.x, b.rh.y); pg.lineTo(b.ra.x, b.ra.y); pg.stroke();
-    }
   }
 }
 
