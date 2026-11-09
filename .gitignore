@@ -1,3 +1,23 @@
 design/
 *.bak
 .DS_Store
+
+# === 맥북 이전: 비밀파일/로컬 전용 제외 ===
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+secrets.env
+*.pem
+*.p12
+*.pfx
+*.key
+*.jks
+*.keystore
+*.p8
+*.mobileprovision
+service-account*.json
+client_secret*.json
+.claude/
+.omc/
