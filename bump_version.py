@@ -16,6 +16,10 @@ s = re.sub(r'(href="css/app\.css)(\?v=[\w]+)?"', rf'\1?v={v}"', s)
 s = re.sub(r'(src="js/main\.js)(\?v=[\w]+)?"', rf'\1?v={v}"', s)
 idx.write_text(s)
 
+lab = root / 'lab' / 'motion-lab.html'
+if lab.exists():
+    lab.write_text(re.sub(r'(src="motion\.js)(\?v=[\w]+)?"', rf'\1?v={v}"', lab.read_text()))
+
 n = 0
 for f in (root / 'js').rglob('*.js'):
     t = f.read_text()

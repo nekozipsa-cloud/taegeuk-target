@@ -1,5 +1,5 @@
 /* 효과(파티클·떠오르는 글자·화면 흔들림)와 공통 그리기 도우미 */
-import { settings } from './config.js?v=202611051554';
+import { settings } from './config.js?v=202611101641';
 
 export const FONT = '"Jua", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif';
 

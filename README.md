@@ -30,6 +30,7 @@
 - `js/detect.js` 동작 판정(지르기·발차기·막기·좌우·숙이기·균형·만세·팔 벌리기)과 세 사람 자리 배정. 모두 화면 좌표 기준이라 반전 설정과 무관하게 화면에 보이는 방향으로 판정. 여러 프레임 유지 + 쿨다운으로 중복 점수 방지
 - `js/input.js` 카메라·키보드·터치·데모 입력을 같은 모양(players[i].flags/events)으로 합침
 - `js/engine.js` 공통 게임 흐름·HUD·효과, `js/games/*.js` 게임 10개, `js/main.js` 메인 화면·설정·루프
+- `lab/` 실험실 (게임과 연결 안 됨, 메인에 링크 없음). `lab/motion-lab.html` + `lab/motion.js`: 태극 1장 아래막기·몸통지르기·얼굴막기를 손이 지나간 길(관문 4개)로 채점하는 1인용 궤적 판정 시험실
 
 ## 되돌리기
 이전 사이트(태극 타깃)는 태그 `v1-taegeuk-target`에 있다: `git revert`로 이번 커밋을 되돌리거나 `git checkout v1-taegeuk-target -- index.html` 후 push.

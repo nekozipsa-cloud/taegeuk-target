@@ -6,10 +6,10 @@
  *     create(ctx) → { update(dt), draw(g), drawBg?(g), onAction?(i, ev), bot?(i) } }
  *   bot(i)는 데모 모드에서 i번 도우미가 할 동작: { type, dir } 또는 { hold, ms, value } 또는 null
  */
-import { settings, MOVE_INFO, PLAYER_COUNT } from './config.js?v=202611051554';
-import { sfx } from './audio.js?v=202611051554';
-import { Fx, outlined, emoji, rnd, pick, clamp, FONT } from './fx.js?v=202611051554';
-import { input, players, botAct, botHold, resetPlayers, KEY_HELP } from './input.js?v=202611051554';
+import { settings, MOVE_INFO, PLAYER_COUNT } from './config.js?v=202611101641';
+import { sfx } from './audio.js?v=202611101641';
+import { Fx, outlined, emoji, rnd, pick, clamp, FONT } from './fx.js?v=202611101641';
+import { input, players, botAct, botHold, resetPlayers, KEY_HELP } from './input.js?v=202611101641';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));

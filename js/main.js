@@ -1,10 +1,10 @@
 /* 플랫폼 셸: 메인 화면, 카메라 동의·연결, 설정, 키보드·터치, 화면 전환, 메인 루프 */
-import { settings, saveSettings, MOVE_INFO, PLAYER_COUNT } from './config.js?v=202611051554';
-import { sfx, unlockAudio } from './audio.js?v=202611051554';
-import { cam, startCamera, stopCamera, onCamChange } from './pose.js?v=202611051554';
-import { input, players, setMode, updateInput, clearEvents, keyAction, isPlayerKey, press, KEY_HELP, resetPlayers } from './input.js?v=202611051554';
-import { Runner } from './engine.js?v=202611051554';
-import { GAMES } from './games/index.js?v=202611051554';
+import { settings, saveSettings, MOVE_INFO, PLAYER_COUNT } from './config.js?v=202611101641';
+import { sfx, unlockAudio } from './audio.js?v=202611101641';
+import { cam, startCamera, stopCamera, onCamChange } from './pose.js?v=202611101641';
+import { input, players, setMode, updateInput, clearEvents, keyAction, isPlayerKey, press, KEY_HELP, resetPlayers } from './input.js?v=202611101641';
+import { Runner } from './engine.js?v=202611101641';
+import { GAMES } from './games/index.js?v=202611101641';
 
 const $ = (id) => document.getElementById(id);
 const video = $('cam');

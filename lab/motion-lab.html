@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>궤적 판정 시험실 · 태극 1장</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --ok:#2fd38a; --no:#ff7a7a; --dim:#8b95a3; --line:#2c313a; }
+  html, body { height: 100%; }
+  body { display:flex; flex-direction:column; background:#12151a; color:#e8eaee; overflow:hidden;
+         font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif; }
+
+  header { flex:0 0 auto; display:flex; align-items:center; gap:14px; padding:10px 18px;
+           background:#1b1f26; border-bottom:1px solid var(--line); }
+  header b { font-size:17px; }
+  header .tag { padding:3px 9px; border:1px solid #3d7fd6; border-radius:4px; color:#7fb0ea; font-size:13px; }
+  select, button { padding:7px 12px; background:#262b33; color:#e8eaee; border:1px solid var(--line);
+                   border-radius:5px; font-size:14px; font-family:inherit; cursor:pointer; }
+  button.go { background:#3d7fd6; border-color:#3d7fd6; font-weight:700; }
+  header .sp { margin-left:auto; color:var(--dim); font-size:13px; }
+
+  main { flex:1 1 auto; display:flex; min-height:0; }
+  #stage { flex:1 1 auto; position:relative; background:#000; }
+  canvas { position:absolute; inset:0; width:100%; height:100%; }
+
+  /* 영상 위 큰 글씨 */
+  #verdict { position:absolute; left:0; right:0; top:6%; text-align:center; pointer-events:none; }
+  #vMain { display:inline-block; padding:6px 24px; border-radius:10px; background:rgba(9,11,14,.72);
+           font-size:clamp(34px,7vh,96px); font-weight:800; }
+  #vSub  { margin-top:10px; font-size:clamp(15px,2.4vh,34px); color:#ffd680; font-weight:700;
+           text-shadow:0 2px 10px #000; }
+  #verdict.ok #vMain { color:#6fe0a6; } #verdict.mid #vMain { color:#ffc95c; } #verdict.bad #vMain { color:#ff8a8a; }
+  #ask { position:absolute; left:0; right:0; bottom:4%; text-align:center;
+         font-size:clamp(20px,4vh,56px); font-weight:800; color:#ffd680; text-shadow:0 2px 12px #000; }
+
+  /* 관문 패널 */
+  aside { flex:0 0 340px; padding:14px 16px; background:#1b1f26; border-left:1px solid var(--line); overflow:auto; }
+  aside h2 { font-size:15px; color:var(--dim); font-weight:600; margin-bottom:10px; }
+  .gate { display:flex; align-items:center; gap:10px; padding:9px 10px; margin-bottom:7px;
+          background:#222831; border:1px solid var(--line); border-radius:7px; }
+  .gate .mk { width:22px; text-align:center; font-size:18px; font-weight:800; color:#5c6674; }
+  .gate .nm { font-size:15px; font-weight:600; }
+  .gate .hp { font-size:12.5px; color:var(--dim); margin-top:2px; }
+  .gate.on { border-color:#27603f; background:#15291f; }
+  .gate.on .mk { color:var(--ok); }
+  .gate.on .hp { display:none; }
+  #score { margin-top:14px; padding:12px; background:#222831; border:1px solid var(--line); border-radius:7px; }
+  #score .big { font-size:30px; font-weight:800; }
+  #nums { margin-top:12px; font-size:12px; color:#6f7885; line-height:1.7; font-variant-numeric:tabular-nums; }
+  .hidden { display:none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">유급자 8급</span>
+  <b>궤적 판정 시험실 — 태극 1장</b>
+  <select id="pick">
+    <option value="mix">섞기 (세 가지)</option>
+    <option value="low">아래막기만</option>
+    <option value="mid">몸통지르기만</option>
+    <option value="high">얼굴막기만</option>
+  </select>
+  <select id="lev" title="판정을 얼마나 깐깐하게 볼지">
+    <option value="쉬움" selected>쉬움 (배우는 중)</option>
+    <option value="보통">보통 (수업)</option>
+    <option value="교본">교본 (심사·시범)</option>
+  </select>
+  <button id="btnVoice">구령 켜짐</button>
+  <button id="btnCam" class="go">카메라 켜기</button>
+  <span class="sp" id="stat">카메라를 켜고 세 걸음 물러서세요</span>
+</header>
+
+<main>
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <div id="verdict" class="hidden"><div id="vMain"></div><div id="vSub"></div></div>
+    <div id="ask"></div>
+  </div>
+
+  <aside>
+    <h2>교본 관문 — 지금 멈추면 이렇게 채점됩니다</h2>
+    <div id="gates"></div>
+    <div id="score">
+      <div>마지막 판정</div>
+      <div class="big" id="sBig">–</div>
+      <div id="sDetail" style="color:var(--dim);font-size:13px;margin-top:4px"></div>
+    </div>
+    <div id="nums"></div>
+    <div id="rule">
+      <b>점수</b><br>
+      <span class="t30">30점 정확!</span> 관문 전부<br>
+      <span class="t20">20점 조금 더</span> 필수만 지킴<br>
+      <span class="t10">10점 자세가 달라요</span> 타깃만 맞힘<br>
+      <span id="levNow" style="color:#7fb0ea"></span>
+    </div>
+  </aside>
+</main>
+
+<script src="motion.js?v=202611101641"></script>
+<script>
+/* ============================================================
+   궤적 판정 시험실
+   기존 게임(index.html)은 건드리지 않는다. 여기서 기준을 맞춘 뒤 옮긴다.
+   ============================================================ */
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const el = (id) => document.getElementById(id);
+let W = 0, H = 0, video, landmarker = null, lastVideoTime = -1;
+const G = { on:false, 추적기: MOTION.새추적기(), 과제:null, 결과시각:0, 마지막:null };
+
+/* 타깃 자리 — 기존 게임과 같은 식 */
+const TARGET = {
+  // 교본 31쪽 "허벅지 위 세운 두 주먹 간격 위에 주먹을 위치하여 마무리한다"
+  // → 허벅지 중간(0.35)이 아니라 엉덩이에 가까운 위쪽(0.15)이 맞다. 팔도 닿는다.
+  low:  (a,s) => ({ x:a.cx + s*a.sw*0.88, y:a.hipY + (a.kneeY-a.hipY)*0.15, r:a.sw*0.52, c:'#2fd38a' }),
+  mid:  (a,s) => ({ x:a.cx,               y:a.chestY,                        r:a.sw*0.5, c:'#ffb347' }),
+  high: (a,s) => ({ x:a.cx + s*a.sw*0.15, y:a.headY - a.sw*0.30,             r:a.sw*0.5, c:'#ff7aa2' }),
+};
+const 이름 = { low:'아래막기', mid:'몸통지르기', high:'얼굴막기' };
+
+/* ============================================================
+   구령 (음성 지시)
+   ------------------------------------------------------------
+   교본 31쪽 지도 TIP — "'아래막기' 기술용어를 인지하기 위해
+   기술용어를 복창하는 것을 추천한다"
+   빔프로젝터 화면을 등지고 선 아이도 무엇을 할지 알아야 한다.
+   ============================================================ */
+const 구령 = {
+  켜짐: true,
+  목소리: null,
+  쓸수있나: 'speechSynthesis' in window,
+
+  준비() {
+    if (!this.쓸수있나) return;
+    const 고르기 = () => {
+      const 전부 = speechSynthesis.getVoices();
+      // 한국어 목소리를 우선. 없으면 기본 목소리로 둔다(브라우저가 알아서 읽는다)
+      this.목소리 = 전부.find((v) => /^ko(-|_|$)/i.test(v.lang)) || null;
+    };
+    고르기();
+    speechSynthesis.addEventListener('voiceschanged', 고르기);   // 목록은 늦게 온다
+    try { const 기억 = localStorage.getItem('구령'); if (기억 !== null) this.켜짐 = 기억 === '1'; } catch (e) {}
+  },
+
+  말하기(글) {
+    if (!this.켜짐 || !this.쓸수있나 || !글) return;
+    try {
+      speechSynthesis.cancel();                 // 앞말이 남아 겹치지 않게
+      const u = new SpeechSynthesisUtterance(글);
+      u.lang = 'ko-KR';
+      if (this.목소리) u.voice = this.목소리;
+      u.rate = 1.05;    // 아이들이 알아듣게 조금 느리게 (게임 본체는 1.15)
+      u.pitch = 1.05;
+      u.volume = 1;
+      speechSynthesis.speak(u);
+    } catch (e) { /* 무시 */ }
+  },
+
+  뒤집기() {
+    this.켜짐 = !this.켜짐;
+    if (!this.켜짐) { try { speechSynthesis.cancel(); } catch (e) {} }
+    try { localStorage.setItem('구령', this.켜짐 ? '1' : '0'); } catch (e) {}
+    this.단추갱신();
+  },
+
+  단추갱신() {
+    const b = el('btnVoice');
+    if (!this.쓸수있나) { b.textContent = '구령 불가'; b.disabled = true; return; }
+    b.textContent = this.켜짐 ? '구령 켜짐' : '구령 꺼짐';
+    b.style.opacity = this.켜짐 ? '1' : '.5';
+  },
+};
+/* 관대함 — 고른 값은 이 컴퓨터가 기억한다 */
+try { const 기억 = localStorage.getItem('관대함'); if (기억) el('lev').value = 기억; } catch (e) {}
+MOTION.관대함적용(el('lev').value);
+el('lev').onchange = () => {
+  MOTION.관대함적용(el('lev').value);
+  try { localStorage.setItem('관대함', el('lev').value); } catch (e) {}
+};
+
+구령.준비();
+구령.단추갱신();
+el('btnVoice').onclick = () => 구령.뒤집기();
+
+function resize() { W = cv.width = cv.clientWidth; H = cv.height = cv.clientHeight; }
+addEventListener('resize', resize);
+
+function videoToScreen(nx, ny) {
+  const vw = video.videoWidth || 1280, vh = video.videoHeight || 720;
+  const s = Math.max(W/vw, H/vh), ox = (W - vw*s)/2, oy = (H - vh*s)/2;
+  return { x: ox + (1-nx)*vw*s, y: oy + ny*vh*s };
+}
+function anchorsFromLandmarks(lm) {
+  const P = (i) => videoToScreen(lm[i].x, lm[i].y);
+  const ls=P(11), rs=P(12), lh=P(23), rh=P(24), lk=P(25), rk=P(26), nose=P(0);
+  const sw = Math.max(Math.hypot(ls.x-rs.x, ls.y-rs.y), Math.abs((ls.y+rs.y)/2 - (lh.y+rh.y)/2)*0.6, 40);
+  const shoulderY=(ls.y+rs.y)/2, hipY=(lh.y+rh.y)/2;
+  return { cx:(ls.x+rs.x+lh.x+rh.x)/4, sw, shoulderY, headY:nose.y,
+           chestY: shoulderY + (hipY-shoulderY)*0.3, hipY, kneeY:(lk.y+rk.y)/2,
+           wrists:[P(15),P(16)], ankles:[P(27),P(28)], elbows:[P(13),P(14)], lm };
+}
+
+async function 카메라켜기() {
+  const b = el('btnCam'); b.disabled = true; b.textContent = '준비 중…';
+  try {
+    video = document.createElement('video');
+    video.playsInline = true; video.muted = true;
+    video.srcObject = await navigator.mediaDevices.getUserMedia({
+      video:{ width:{ideal:1280}, height:{ideal:720}, facingMode:'user' }, audio:false });
+    await video.play();
+
+    const mp = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/vision_bundle.mjs');
+    const fileset = await mp.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm');
+    const model = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
+    for (const delegate of ['GPU','CPU']) {
+      try { landmarker = await mp.PoseLandmarker.createFromOptions(fileset,
+        { baseOptions:{ modelAssetPath:model, delegate }, runningMode:'VIDEO', numPoses:1,
+          minPoseDetectionConfidence:0.5, minTrackingConfidence:0.5 }); break; }
+      catch(e) { if (delegate==='CPU') throw e; }
+    }
+    b.textContent = '카메라 켜짐'; G.on = true; resize(); 새과제(); requestAnimationFrame(tick);
+  } catch (err) {
+    el('stat').textContent = '카메라 오류: ' + (err.message || err);
+    b.disabled = false; b.textContent = '다시 시도';
+  }
+}
+el('btnCam').onclick = 카메라켜기;
+
+function 새과제() {
+  const 고른 = el('pick').value;
+  const 키 = 고른 === 'mix' ? ['low','mid','high'][Math.floor(Math.random()*3)] : 고른;
+  G.과제 = { 키, s: Math.random() < 0.5 ? 1 : -1, 생긴때: performance.now() };
+  el('ask').textContent = 이름[키] + '!';
+  구령.말하기(이름[키]);        // 화면을 안 보고 있어도 무엇을 할지 들리게
+}
+
+function 관문그리기(평가) {
+  const box = el('gates');
+  if (!평가) { box.innerHTML = '<div style="color:#6f7885;font-size:13px">사람이 보이면 표시됩니다</div>'; return; }
+  box.innerHTML = 평가.관문.map(g =>
+    `<div class="gate ${g.통과?'on':''}"><div class="mk">${g.통과?'○':'·'}</div>
+       <div><div class="nm">${g.이름}${g.필수?' <span class="must">필수</span>':''}</div>${g.통과?'':`<div class="hp">${g.도움말}</div>`}</div></div>`).join('');
+}
+
+function tick(now) {
+  if (!G.on) return;
+  resize();
+  ctx.clearRect(0,0,W,H);
+
+  /* 영상 (거울) */
+  const vw = video.videoWidth||1280, vh = video.videoHeight||720;
+  const sc = Math.max(W/vw, H/vh), ox=(W-vw*sc)/2, oy=(H-vh*sc)/2;
+  ctx.save(); ctx.translate(W,0); ctx.scale(-1,1);
+  ctx.drawImage(video, ox, oy, vw*sc, vh*sc); ctx.restore();
+
+  let a = null;
+  if (landmarker && video.currentTime !== lastVideoTime) {
+    lastVideoTime = video.currentTime;
+    try {
+      const res = landmarker.detectForVideo(video, now);
+      if (res && res.landmarks && res.landmarks.length) {
+        a = anchorsFromLandmarks(res.landmarks[0]);
+        G.마지막 = a;
+        MOTION.기록(G.추적기, now, a);
+      } else G.마지막 = null;
+    } catch(e) {}
+  } else a = G.마지막;
+
+  if (a) {
+    /* 관절 점 — 판정에 쓰는 것만 */
+    ctx.fillStyle = 'rgba(255,255,255,.9)';
+    for (const p of [...a.wrists, ...a.ankles]) { ctx.beginPath(); ctx.arc(p.x,p.y,a.sw*0.07,0,7); ctx.fill(); }
+
+    const T = TARGET[G.과제.키](a, G.과제.s);
+    /* 타깃 */
+    ctx.strokeStyle = T.c; ctx.lineWidth = Math.max(3, a.sw*0.08);
+    ctx.beginPath(); ctx.arc(T.x, T.y, T.r, 0, 7); ctx.stroke();
+
+    /* 타깃에 가장 가까운 손 */
+    let 손 = 0, 가장 = 1e9;
+    a.wrists.forEach((p,i) => { const d = Math.hypot(p.x-T.x, p.y-T.y); if (d < 가장) { 가장 = d; 손 = i; } });
+
+    /* 지나온 길 */
+    const 표본 = G.추적기.표본.slice(-30);
+    if (표본.length > 2) {
+      ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = Math.max(2, a.sw*0.04);
+      ctx.beginPath();
+      표본.forEach((s,i) => { const p = { x:a.cx + s.손목[손].nx*a.sw, y:a.shoulderY + s.손목[손].ny*a.sw };
+        i ? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y); });
+      ctx.stroke();
+    }
+
+    /* 실시간 관문 */
+    const 평 = MOTION.동선평가(G.추적기, G.과제.키, 손, G.과제.s, now);
+    관문그리기(평);
+    if (평 && 평.값 && 평.값.시작) {
+      el('nums').innerHTML =
+        `어깨너비 ${Math.round(a.sw)}px · 쓰는 손 ${손===0?'왼':'오른'}<br>` +
+        `시작 ny ${평.값.시작.ny.toFixed(2)} / 바깥 ${평.값.시작.바깥.toFixed(2)}<br>` +
+        `지금 ny ${평.값.끝.ny.toFixed(2)} / 바깥 ${평.값.끝.바깥.toFixed(2)}<br>` +
+        `내림 ${(평.값.끝.ny-평.값.시작.ny).toFixed(2)} · 벌어짐 ${(평.값.끝.바깥-평.값.시작.바깥).toFixed(2)}`;
+    }
+
+    /* 타깃 명중 → 판정 */
+    const 맞음 = 가장 <= T.r;
+    const 지남 = now - G.과제.생긴때;
+    if (맞음 && 지남 > 350 && now - G.결과시각 > 1200) {
+      const 점 = MOTION.점수내기(평);
+      G.결과시각 = now;
+      const v = el('verdict'); v.className = 평.완전 ? 'ok' : (평.필수통과 ? 'mid' : 'bad');
+      el('vMain').textContent = 점.등급;
+      el('vSub').textContent = MOTION.한마디(평);
+      el('sBig').textContent = `${점.합}점`;
+      el('sDetail').textContent = `타깃 ${점.타깃} + 동선 ${점.동선} · 관문 ${평.통과수}/${평.전체수}` + (평.필수통과 ? '' : ' · 필수 놓침');
+      setTimeout(() => { v.classList.add('hidden'); 새과제(); }, 1500);
+      v.classList.remove('hidden');
+    }
+    el('stat').textContent = `인식 중 · ${이름[G.과제.키]} (${G.과제.s>0?'오른':'왼'}쪽)`;
+  } else {
+    관문그리기(null);
+    el('stat').textContent = '사람이 안 보입니다 — 머리부터 무릎까지 들어오게 서세요';
+  }
+  el('levNow').textContent = '지금 판정: ' + MOTION.기준.이름;
+  requestAnimationFrame(tick);
+}
+</script>
+</body>
+</html>
